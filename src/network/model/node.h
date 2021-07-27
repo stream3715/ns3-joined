@@ -84,6 +84,11 @@ public:
   uint32_t GetId (void) const;
 
   /**
+   * \returns the kademlia node id of this node.
+   */
+  std::string GetNodeId (void) const;
+
+  /**
    * In the future, ns3 nodes may have clock that returned a local time
    * different from the virtual time Simulator::Now().
    * This function is currently a placeholder to ease the development of this feature.

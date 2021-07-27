@@ -19,15 +19,15 @@
 
 #include "ndn-l3-protocol.hpp"
 
-#include "ns3/packet.h"
-#include "ns3/node.h"
-#include "ns3/log.h"
 #include "ns3/callback.h"
-#include "ns3/uinteger.h"
-#include "ns3/trace-source-accessor.h"
+#include "ns3/log.h"
+#include "ns3/node.h"
 #include "ns3/object-vector.h"
+#include "ns3/packet.h"
 #include "ns3/pointer.h"
 #include "ns3/simulator.h"
+#include "ns3/trace-source-accessor.h"
+#include "ns3/uinteger.h"
 
 #include "ndn-net-device-transport.hpp"
 
@@ -35,25 +35,25 @@
 
 #include <boost/property_tree/info_parser.hpp>
 
-#include "ns3/ndnSIM/NFD/daemon/fw/forwarder.hpp"
 #include "ns3/ndnSIM/NFD/daemon/face/internal-face.hpp"
 #include "ns3/ndnSIM/NFD/daemon/face/internal-transport.hpp"
-#include "ns3/ndnSIM/NFD/daemon/mgmt/fib-manager.hpp"
-#include "ns3/ndnSIM/NFD/daemon/mgmt/face-manager.hpp"
-#include "ns3/ndnSIM/NFD/daemon/mgmt/strategy-choice-manager.hpp"
+#include "ns3/ndnSIM/NFD/daemon/fw/forwarder.hpp"
 #include "ns3/ndnSIM/NFD/daemon/mgmt/cs-manager.hpp"
+#include "ns3/ndnSIM/NFD/daemon/mgmt/face-manager.hpp"
+#include "ns3/ndnSIM/NFD/daemon/mgmt/fib-manager.hpp"
 #include "ns3/ndnSIM/NFD/daemon/mgmt/forwarder-status-manager.hpp"
+#include "ns3/ndnSIM/NFD/daemon/mgmt/strategy-choice-manager.hpp"
 // #include "ns3/ndnSIM/NFD/daemon/mgmt/general-config-section.hpp"
-#include "ns3/ndnSIM/NFD/daemon/mgmt/tables-config-section.hpp"
 #include "ns3/ndnSIM/NFD/daemon/mgmt/command-authenticator.hpp"
+#include "ns3/ndnSIM/NFD/daemon/mgmt/tables-config-section.hpp"
 
 #include "ns3/ndnSIM/NFD/daemon/rib/service.hpp"
 
-#include "ns3/ndnSIM/NFD/daemon/face/null-face.hpp"
 #include "ns3/ndnSIM/NFD/daemon/face/internal-face.hpp"
+#include "ns3/ndnSIM/NFD/daemon/face/null-face.hpp"
 
-#include "ns3/ndnSIM/NFD/daemon/common/global.hpp"
 #include "ns3/ndnSIM/NFD/daemon/common/config-file.hpp"
+#include "ns3/ndnSIM/NFD/daemon/common/global.hpp"
 
 #include <ndn-cxx/mgmt/dispatcher.hpp>
 
@@ -104,71 +104,72 @@ L3Protocol::GetTypeId(void)
                       "ns3::ndn::L3Protocol::SatisfiedInterestsCallback")
       .AddTraceSource("TimedOutInterests", "TimedOutInterests",
                       MakeTraceSourceAccessor(&L3Protocol::m_timedOutInterests),
-                      "ns3::ndn::L3Protocol::TimedOutInterestsCallback")
-    ;
+                      "ns3::ndn::L3Protocol::TimedOutInterestsCallback");
   return tid;
 }
 
 class L3Protocol::Impl {
 private:
-  Impl()
+  Impl(std::string id)
   {
     // Do not modify initial config file. Use helpers to set specific NFD parameters
-    std::string initialConfig =
-      "general\n"
-      "{\n"
-      "}\n"
-      "\n"
-      "tables\n"
-      "{\n"
-      "  cs_max_packets 100\n"
-      "\n"
-      "  strategy_choice\n"
-      "  {\n"
-      "    /               /localhost/nfd/strategy/best-route\n"
-      "    /localhost      /localhost/nfd/strategy/multicast\n"
-      "    /localhost/nfd  /localhost/nfd/strategy/best-route\n"
-      "    /ndn/multicast  /localhost/nfd/strategy/multicast\n"
-      "  }\n"
-      "}\n"
-      "\n"
-      // "face_system\n"
-      // "{\n"
-      // "}\n"
-      "\n"
-      "authorizations\n"
-      "{\n"
-      "  authorize\n"
-      "  {\n"
-      "    certfile any\n"
-      "    privileges\n"
-      "    {\n"
-      "      faces\n"
-      "      fib\n"
-      "      strategy-choice\n"
-      "    }\n"
-      "  }\n"
-      "}\n"
-      "\n"
-      "rib\n"
-      "{\n"
-      "  localhost_security\n"
-      "  {\n"
-      "    trust-anchor\n"
-      "    {\n"
-      "      type any\n"
-      "    }\n"
-      "  }\n"
-      "}\n"
-      "\n";
+    std::string initialConfig = "general\n"
+                                "{\n"
+                                "}\n"
+                                "\n"
+                                "tables\n"
+                                "{\n"
+                                "  cs_max_packets 100\n"
+                                "\n"
+                                "  strategy_choice\n"
+                                "  {\n"
+                                "    /               /localhost/nfd/strategy/best-route\n"
+                                "    /localhost      /localhost/nfd/strategy/multicast\n"
+                                "    /localhost/nfd  /localhost/nfd/strategy/best-route\n"
+                                "    /ndn/multicast  /localhost/nfd/strategy/multicast\n"
+                                "  }\n"
+                                "}\n"
+                                "\n"
+                                // "face_system\n"
+                                // "{\n"
+                                // "}\n"
+                                "\n"
+                                "authorizations\n"
+                                "{\n"
+                                "  authorize\n"
+                                "  {\n"
+                                "    certfile any\n"
+                                "    privileges\n"
+                                "    {\n"
+                                "      faces\n"
+                                "      fib\n"
+                                "      strategy-choice\n"
+                                "    }\n"
+                                "  }\n"
+                                "}\n"
+                                "\n"
+                                "rib\n"
+                                "{\n"
+                                "  localhost_security\n"
+                                "  {\n"
+                                "    trust-anchor\n"
+                                "    {\n"
+                                "      type any\n"
+                                "    }\n"
+                                "  }\n"
+                                "}\n"
+                                "\n";
 
     std::istringstream input(initialConfig);
     boost::property_tree::read_info(input, m_config);
+    m_id = make_shared<std::string>(id);
   }
 
   friend class L3Protocol;
 
   // note that shared_ptr needed for Python bindings
+
+  std::shared_ptr<std::string> m_id;
 
   std::shared_ptr<::nfd::Forwarder> m_forwarder;
   std::unique_ptr<::nfd::FaceTable> m_faceTable;
@@ -196,8 +197,8 @@ private:
   PolicyCreationCallback m_policy;
 };
 
-L3Protocol::L3Protocol()
-  : m_impl(new Impl())
+L3Protocol::L3Protocol(std::string id)
+  : m_impl(new Impl(id))
 {
   NS_LOG_FUNCTION(this);
 }
@@ -211,7 +212,7 @@ void
 L3Protocol::initialize()
 {
   m_impl->m_faceTable = make_unique<::nfd::FaceTable>();
-  m_impl->m_forwarder = make_shared<::nfd::Forwarder>(*m_impl->m_faceTable);
+  m_impl->m_forwarder = make_shared<::nfd::Forwarder>(*m_impl->m_faceTable, *m_impl->m_id);
   m_impl->m_faceSystem = make_unique<::nfd::face::FaceSystem>(*m_impl->m_faceTable, nullptr);
 
   initializeManagement();
@@ -221,8 +222,7 @@ L3Protocol::initialize()
   m_impl->m_forwarder->beforeExpirePendingInterest.connect(std::ref(m_timedOutInterests));
 }
 
-class IgnoreSections
-{
+class IgnoreSections {
 public:
   IgnoreSections(const std::vector<std::string>& ignored)
     : m_ignored(ignored)
@@ -238,6 +238,7 @@ public:
       nfd::ConfigFile::throwErrorOnUnknownSection(filename, sectionName, section, isDryRun);
     }
   }
+
 private:
   std::vector<std::string> m_ignored;
 };
@@ -260,30 +261,43 @@ L3Protocol::initializeManagement()
   auto& forwarder = m_impl->m_forwarder;
   using namespace nfd;
 
-  std::tie(m_impl->m_internalFace, m_impl->m_internalClientFace) = face::makeInternalFace(StackHelper::getKeyChain());
+  std::tie(m_impl->m_internalFace, m_impl->m_internalClientFace) =
+    face::makeInternalFace(StackHelper::getKeyChain());
   m_impl->m_faceTable->addReserved(m_impl->m_internalFace, face::FACEID_INTERNAL_FACE);
 
-  std::tie(m_impl->m_internalFaceForInjects, m_impl->m_internalClientFaceForInjects) = face::makeInternalFace(StackHelper::getKeyChain());
-  m_impl->m_faceTable->addReserved(m_impl->m_internalFaceForInjects, face::FACEID_INTERNAL_FACE + 1);
+  std::tie(m_impl->m_internalFaceForInjects, m_impl->m_internalClientFaceForInjects) =
+    face::makeInternalFace(StackHelper::getKeyChain());
+  m_impl->m_faceTable->addReserved(m_impl->m_internalFaceForInjects,
+                                   face::FACEID_INTERNAL_FACE + 1);
 
-  m_impl->m_dispatcher = make_unique<::ndn::mgmt::Dispatcher>(*m_impl->m_internalClientFace, StackHelper::getKeyChain());
+  m_impl->m_dispatcher =
+    make_unique<::ndn::mgmt::Dispatcher>(*m_impl->m_internalClientFace, StackHelper::getKeyChain());
   m_impl->m_authenticator = ::nfd::CommandAuthenticator::create();
 
   if (!this->getConfig().get<bool>("ndnSIM.disable_forwarder_status_manager", false)) {
-    m_impl->m_forwarderStatusManager = make_unique<::nfd::ForwarderStatusManager>(*m_impl->m_forwarder, *m_impl->m_dispatcher);
+    m_impl->m_forwarderStatusManager =
+      make_unique<::nfd::ForwarderStatusManager>(*m_impl->m_forwarder, *m_impl->m_dispatcher);
   }
-  m_impl->m_faceManager = make_unique<::nfd::FaceManager>(*m_impl->m_faceSystem, *m_impl->m_dispatcher, *m_impl->m_authenticator);
-  m_impl->m_fibManager = make_shared<::nfd::FibManager>(m_impl->m_forwarder->getFib(), *m_impl->m_faceTable,
-                                                        *m_impl->m_dispatcher, *m_impl->m_authenticator);
-  m_impl->m_csManager = make_unique<::nfd::CsManager>(m_impl->m_forwarder->getCs(), m_impl->m_forwarder->getCounters(),
-                                                      *m_impl->m_dispatcher, *m_impl->m_authenticator);
+  m_impl->m_faceManager =
+    make_unique<::nfd::FaceManager>(*m_impl->m_faceSystem, *m_impl->m_dispatcher,
+                                    *m_impl->m_authenticator);
+  m_impl->m_fibManager =
+    make_shared<::nfd::FibManager>(m_impl->m_forwarder->getFib(), *m_impl->m_faceTable,
+                                   *m_impl->m_dispatcher, *m_impl->m_authenticator);
+  m_impl->m_csManager =
+    make_unique<::nfd::CsManager>(m_impl->m_forwarder->getCs(), m_impl->m_forwarder->getCounters(),
+                                  *m_impl->m_dispatcher, *m_impl->m_authenticator);
   if (!this->getConfig().get<bool>("ndnSIM.disable_strategy_choice_manager", false)) {
-    m_impl->m_strategyChoiceManager = make_unique<::nfd::StrategyChoiceManager>(m_impl->m_forwarder->getStrategyChoice(),
-                                                                                *m_impl->m_dispatcher, *m_impl->m_authenticator);
-
+    m_impl->m_strategyChoiceManager =
+      make_unique<::nfd::StrategyChoiceManager>(m_impl->m_forwarder->getStrategyChoice(),
+                                                *m_impl->m_dispatcher, *m_impl->m_authenticator);
   }
   else {
-    this->getConfig().get_child("authorizations").get_child("authorize").get_child("privileges").erase("strategy-choice");
+    this->getConfig()
+      .get_child("authorizations")
+      .get_child("authorize")
+      .get_child("privileges")
+      .erase("strategy-choice");
   }
 
   ConfigFile config(&ConfigFile::ignoreUnknownSection);
@@ -316,12 +330,13 @@ L3Protocol::initializeRibManager()
 {
   using namespace nfd;
 
-  std::tie(m_impl->m_internalRibFace, m_impl->m_internalRibClientFace) = face::makeInternalFace(StackHelper::getKeyChain());
+  std::tie(m_impl->m_internalRibFace, m_impl->m_internalRibClientFace) =
+    face::makeInternalFace(StackHelper::getKeyChain());
   m_impl->m_faceTable->add(m_impl->m_internalRibFace);
 
-  m_impl->m_ribService = make_unique<rib::Service>(m_impl->m_config,
-                                                   std::ref(*m_impl->m_internalRibClientFace),
-                                                   std::ref(StackHelper::getKeyChain()));
+  m_impl->m_ribService =
+    make_unique<rib::Service>(m_impl->m_config, std::ref(*m_impl->m_internalRibClientFace),
+                              std::ref(StackHelper::getKeyChain()));
 }
 
 shared_ptr<nfd::Forwarder>
@@ -402,7 +417,8 @@ L3Protocol::addFace(shared_ptr<Face> face)
   std::weak_ptr<Face> weakFace = face;
 
   // // Connect Signals to TraceSource
-  face->afterReceiveInterest.connect([this, weakFace](const Interest& interest, const nfd::EndpointId&) {
+  face->afterReceiveInterest.connect(
+    [this, weakFace](const Interest& interest, const nfd::EndpointId&) {
       shared_ptr<Face> face = weakFace.lock();
       if (face != nullptr) {
         this->m_inInterests(interest, *face);
@@ -410,41 +426,41 @@ L3Protocol::addFace(shared_ptr<Face> face)
     });
 
   face->afterReceiveData.connect([this, weakFace](const Data& data, const nfd::EndpointId&) {
-      shared_ptr<Face> face = weakFace.lock();
-      if (face != nullptr) {
-        this->m_inData(data, *face);
-      }
-    });
+    shared_ptr<Face> face = weakFace.lock();
+    if (face != nullptr) {
+      this->m_inData(data, *face);
+    }
+  });
 
   face->afterReceiveNack.connect([this, weakFace](const lp::Nack& nack, const nfd::EndpointId&) {
-      shared_ptr<Face> face = weakFace.lock();
-      if (face != nullptr) {
-        this->m_inNack(nack, *face);
-      }
-    });
+    shared_ptr<Face> face = weakFace.lock();
+    if (face != nullptr) {
+      this->m_inNack(nack, *face);
+    }
+  });
 
   auto tracingLink = face->getLinkService();
   NS_LOG_LOGIC("Adding trace sources for afterSendInterest and afterSendData");
   tracingLink->afterSendInterest.connect([this, weakFace](const Interest& interest) {
-      shared_ptr<Face> face = weakFace.lock();
-      if (face != nullptr) {
-        this->m_outInterests(interest, *face);
-      }
-    });
+    shared_ptr<Face> face = weakFace.lock();
+    if (face != nullptr) {
+      this->m_outInterests(interest, *face);
+    }
+  });
 
   tracingLink->afterSendData.connect([this, weakFace](const Data& data) {
-      shared_ptr<Face> face = weakFace.lock();
-      if (face != nullptr) {
-        this->m_outData(data, *face);
-      }
-    });
+    shared_ptr<Face> face = weakFace.lock();
+    if (face != nullptr) {
+      this->m_outData(data, *face);
+    }
+  });
 
   tracingLink->afterSendNack.connect([this, weakFace](const lp::Nack& nack) {
-      shared_ptr<Face> face = weakFace.lock();
-      if (face != nullptr) {
-        this->m_outNack(nack, *face);
-      }
-    });
+    shared_ptr<Face> face = weakFace.lock();
+    if (face != nullptr) {
+      this->m_outNack(nack, *face);
+    }
+  });
 
   return face->getId();
 }

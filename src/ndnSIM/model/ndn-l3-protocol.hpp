@@ -95,7 +95,7 @@ public:
   /**
    * \brief Default constructor. Creates an empty stack without forwarding strategy set
    */
-  L3Protocol();
+  L3Protocol(std::string id);
 
   virtual ~L3Protocol();
 

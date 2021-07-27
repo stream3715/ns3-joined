@@ -52,6 +52,38 @@ namespace ns3 {
 using ns3::ndn::GlobalRoutingHelper;
 
 int
+genRand (int min, int max)
+{
+  static int flag;
+  if (flag == 0)
+    {
+      srand ((unsigned int) time (NULL));
+      rand ();
+      flag = 1;
+    }
+  int ret = min + (int) (rand () * (max - min + 1.0) / (1.0 + RAND_MAX));
+  return ret;
+}
+
+char
+getRandomCharLower (void)
+{
+  //　英小文字の例
+  const char CHARS[] = "abcdefghijklmnopqrstuvwxyz";
+  int index = genRand (0, (strlen (CHARS) - 1));
+  char c = CHARS[index];
+  return c;
+}
+
+std::string
+genRandomStringLower (int length)
+{
+  std::string text (length, '.');
+  generate_n (text.begin (), length, getRandomCharLower);
+  return text;
+}
+
+int
 main (int argc, char *argv[])
 {
   // setting default parameters for PointToPoint links and channels
@@ -64,13 +96,13 @@ main (int argc, char *argv[])
   CommandLine cmd;
   cmd.Parse (argc, argv);
 
-  int nodeCount = 3;
+  uint32_t nodeCount = 3;
 
   std::string array[nodeCount];
 
   clx::sha1 hash;
 
-  for (int i = 0; i < nodeCount; i++)
+  for (uint32_t i = 0; i < nodeCount; i++)
     {
       std::string contentHash =
           hash.encode (boost::lexical_cast<std::string> (genRandomStringLower (160))).to_string ();
@@ -130,36 +162,4 @@ int
 main (int argc, char *argv[])
 {
   return ns3::main (argc, argv);
-}
-
-int
-genRand (int min, int max)
-{
-  static int flag;
-  if (flag == 0)
-    {
-      srand ((unsigned int) time (NULL));
-      rand ();
-      flag = 1;
-    }
-  int ret = min + (int) (rand () * (max - min + 1.0) / (1.0 + RAND_MAX));
-  return ret;
-}
-
-char
-getRandomCharLower (void)
-{
-  //　英小文字の例
-  const char CHARS[] = "abcdefghijklmnopqrstuvwxyz";
-  int index = genRand (0, (strlen (CHARS) - 1));
-  char c = CHARS[index];
-  return c;
-}
-
-std::string
-genRandomStringLower (int length)
-{
-  std::string text (length, '.');
-  generate_n (text.begin (), length, getRandomCharLower);
-  return text;
 }

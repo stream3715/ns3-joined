@@ -252,18 +252,6 @@ public:
   void Create (uint32_t n);
 
   /**
-   * \brief Create n nodes with node id array (n length) and append pointers to them to the end of this
-   * NodeContainer.
-   *
-   * Nodes are at the heart of any ns-3 simulation.  One of the first tasks that
-   * any simulation needs to do is to create a number of nodes.  This method
-   * automates that task.
-   *
-   * \param array The array of Nodes id to create
-   */
-  void Create (std::string array[]);
-
-  /**
    * \brief Create n nodes with specified systemId for distributed simulations
    * and append pointers to them to the end of this NodeContainer.
    *

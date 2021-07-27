@@ -108,6 +108,13 @@ Node::GetId (void) const
   return m_id;
 }
 
+std::string
+Node::GetNodeId (void) const
+{
+  NS_LOG_FUNCTION (this);
+  return m_nid;
+}
+
 Time
 Node::GetLocalTime (void) const
 {

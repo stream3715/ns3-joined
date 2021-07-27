@@ -138,17 +138,6 @@ NodeContainer::Create (uint32_t n)
 }
 
 void
-NodeContainer::Create (std::string array[])
-{
-  uint32_t countId = std::extent<decltype (array)>::value;
-
-  for (uint32_t i = 0; i < countId; i++)
-    {
-      m_nodes.push_back (CreateObject<Node> (array[i]));
-    }
-}
-
-void
 NodeContainer::Create (uint32_t n, uint32_t systemId)
 {
   for (uint32_t i = 0; i < n; i++)
