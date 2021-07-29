@@ -26,6 +26,11 @@
 #include "ns3/network-module.h"
 #include "ns3/point-to-point-module.h"
 
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/lexical_cast.hpp>
+
 #include <clx/sha1.h>
 namespace ns3 {
 
@@ -50,38 +55,7 @@ namespace ns3 {
  */
 
 using ns3::ndn::GlobalRoutingHelper;
-
-int
-genRand (int min, int max)
-{
-  static int flag;
-  if (flag == 0)
-    {
-      srand ((unsigned int) time (NULL));
-      rand ();
-      flag = 1;
-    }
-  int ret = min + (int) (rand () * (max - min + 1.0) / (1.0 + RAND_MAX));
-  return ret;
-}
-
-char
-getRandomCharLower (void)
-{
-  //　英小文字の例
-  const char CHARS[] = "abcdefghijklmnopqrstuvwxyz";
-  int index = genRand (0, (strlen (CHARS) - 1));
-  char c = CHARS[index];
-  return c;
-}
-
-std::string
-genRandomStringLower (int length)
-{
-  std::string text (length, '.');
-  generate_n (text.begin (), length, getRandomCharLower);
-  return text;
-}
+using namespace boost::uuids;
 
 int
 main (int argc, char *argv[])
@@ -104,8 +78,8 @@ main (int argc, char *argv[])
 
   for (uint32_t i = 0; i < nodeCount; i++)
     {
-      std::string contentHash =
-          hash.encode (boost::lexical_cast<std::string> (genRandomStringLower (160))).to_string ();
+      const uuid id = random_generator () ();
+      std::string contentHash = hash.encode (boost::lexical_cast<std::string> (id)).to_string ();
       array.push_back (contentHash);
     }
 
