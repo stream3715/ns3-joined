@@ -98,7 +98,7 @@ main (int argc, char *argv[])
 
   uint32_t nodeCount = 3;
 
-  std::string array[nodeCount];
+  std::vector<std::string> array;
 
   clx::sha1 hash;
 
@@ -106,7 +106,7 @@ main (int argc, char *argv[])
     {
       std::string contentHash =
           hash.encode (boost::lexical_cast<std::string> (genRandomStringLower (160))).to_string ();
-      array[i] = contentHash;
+      array.push_back (contentHash);
     }
 
   // Creating nodes

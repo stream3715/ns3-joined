@@ -138,6 +138,15 @@ NodeContainer::Create (uint32_t n)
 }
 
 void
+NodeContainer::Create (std::vector<std::string> array)
+{
+  for (uint32_t i = 0; i < array.size (); i++)
+    {
+      m_nodes.push_back (CreateObject<Node> (array[i]));
+    }
+}
+
+void
 NodeContainer::Create (uint32_t n, uint32_t systemId)
 {
   for (uint32_t i = 0; i < n; i++)
