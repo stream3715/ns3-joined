@@ -43,11 +43,10 @@ const time::milliseconds DEFAULT_INTEREST_LIFETIME = 4_s;
 
 /** @brief Represents an Interest packet.
  */
-class Interest : public PacketBase,
-                 public std::enable_shared_from_this<Interest> {
- public:
+class Interest : public PacketBase, public std::enable_shared_from_this<Interest> {
+public:
   class Error : public tlv::Error {
-   public:
+  public:
     using tlv::Error::Error;
   };
 
@@ -85,7 +84,11 @@ class Interest : public PacketBase,
 
   /** @brief Check if this instance has cached wire encoding.
    */
-  bool hasWire() const { return m_wire.hasWire(); }
+  bool
+  hasWire() const
+  {
+    return m_wire.hasWire();
+  }
 
   /** @brief Return a URI-like string that represents the Interest.
    *
@@ -96,7 +99,7 @@ class Interest : public PacketBase,
    */
   std::string toUri() const;
 
- public:  // matching
+public: // matching
   /** @brief Check if Interest can be satisfied by @p data.
    *
    *  This method considers Name, CanBePrefix, and MustBeFresh. However,
@@ -112,12 +115,20 @@ class Interest : public PacketBase,
    */
   bool matchesInterest(const Interest& other) const;
 
- public:  // element access
-  const Name& getProtocol() const noexcept { return m_protocol; }
+public: // element access
+  const Name&
+  getProtocol() const noexcept
+  {
+    return m_protocol;
+  }
 
   void setProtocol(const std::string protocol) const;
 
-  const Name& getName() const noexcept { return m_name; }
+  const Name&
+  getName() const noexcept
+  {
+    return m_name;
+  }
 
   /** @brief Set the Interest's name.
    *  @throw std::invalid_argument @p name is invalid
@@ -141,18 +152,26 @@ class Interest : public PacketBase,
    * tests.
    *  @sa https://redmine.named-data.net/projects/nfd/wiki/Packet03Transition
    */
-  static void setDefaultCanBePrefix(bool canBePrefix) {
+  static void
+  setDefaultCanBePrefix(bool canBePrefix)
+  {
     s_defaultCanBePrefix = canBePrefix;
   }
 
   /** @brief Check whether the CanBePrefix element is present.
    */
-  bool getCanBePrefix() const noexcept { return m_canBePrefix; }
+  bool
+  getCanBePrefix() const noexcept
+  {
+    return m_canBePrefix;
+  }
 
   /** @brief Add or remove CanBePrefix element.
    *  @param canBePrefix whether CanBePrefix element should be present.
    */
-  Interest& setCanBePrefix(bool canBePrefix) {
+  Interest&
+  setCanBePrefix(bool canBePrefix)
+  {
     m_canBePrefix = canBePrefix;
     m_wire.reset();
     m_isCanBePrefixSet = true;
@@ -161,18 +180,26 @@ class Interest : public PacketBase,
 
   /** @brief Check whether the MustBeFresh element is present.
    */
-  bool getMustBeFresh() const noexcept { return m_mustBeFresh; }
+  bool
+  getMustBeFresh() const noexcept
+  {
+    return m_mustBeFresh;
+  }
 
   /** @brief Add or remove MustBeFresh element.
    *  @param mustBeFresh whether MustBeFresh element should be present.
    */
-  Interest& setMustBeFresh(bool mustBeFresh) {
+  Interest&
+  setMustBeFresh(bool mustBeFresh)
+  {
     m_mustBeFresh = mustBeFresh;
     m_wire.reset();
     return *this;
   }
 
-  const DelegationList& getForwardingHint() const noexcept {
+  const DelegationList&
+  getForwardingHint() const noexcept
+  {
     return m_forwardingHint;
   }
 
@@ -189,7 +216,9 @@ class Interest : public PacketBase,
    *  @endcode
    */
   template <typename Modifier>
-  Interest& modifyForwardingHint(const Modifier& modifier) {
+  Interest&
+  modifyForwardingHint(const Modifier& modifier)
+  {
     modifier(m_forwardingHint);
     m_wire.reset();
     return *this;
@@ -197,7 +226,11 @@ class Interest : public PacketBase,
 
   /** @brief Check if the Nonce element is present.
    */
-  bool hasNonce() const noexcept { return m_nonce.has_value(); }
+  bool
+  hasNonce() const noexcept
+  {
+    return m_nonce.has_value();
+  }
 
   /** @brief Get nonce value.
    *
@@ -216,7 +249,9 @@ class Interest : public PacketBase,
    */
   void refreshNonce();
 
-  time::milliseconds getInterestLifetime() const noexcept {
+  time::milliseconds
+  getInterestLifetime() const noexcept
+  {
     return m_interestLifetime;
   }
 
@@ -225,7 +260,11 @@ class Interest : public PacketBase,
    */
   Interest& setInterestLifetime(time::milliseconds lifetime);
 
-  optional<uint8_t> getHopLimit() const noexcept { return m_hopLimit; }
+  optional<uint8_t>
+  getHopLimit() const noexcept
+  {
+    return m_hopLimit;
+  }
 
   /** @brief Set the Interest's hop limit.
    *
@@ -233,12 +272,16 @@ class Interest : public PacketBase,
    */
   Interest& setHopLimit(optional<uint8_t> hopLimit);
 
-  bool hasApplicationParameters() const noexcept {
+  bool
+  hasApplicationParameters() const noexcept
+  {
     return !m_parameters.empty();
   }
 
-  Block getApplicationParameters() const {
-    if(m_parameters.empty())
+  Block
+  getApplicationParameters() const
+  {
+    if (m_parameters.empty())
       return {};
     else
       return m_parameters.front();
@@ -290,36 +333,58 @@ class Interest : public PacketBase,
    */
   Interest& unsetApplicationParameters();
 
-  const Name& getDestinationNodeID() const noexcept { return m_destid; }
+  const Name&
+  getDestinationNodeID() const noexcept
+  {
+    return m_destid;
+  }
 
-  Interest& setDestinationNodeID(Name destid) {
+  Interest&
+  setDestinationNodeID(Name destid)
+  {
     m_destid = destid;
     m_wire.reset();
     return *this;
   }
 
-  const Name& getAgentNodeID() const noexcept { return m_destid; }
+  const Name&
+  getAgentNodeID() const noexcept
+  {
+    return m_destid;
+  }
 
-  void setAgentNodeID(Name agentid) const {
+  void
+  setAgentNodeID(Name agentid) const
+  {
     m_agentid = agentid;
     m_wire.reset();
     return;
   }
 
-  const Name& getContentName() const noexcept { return m_contentname; }
+  const Name&
+  getContentName() const noexcept
+  {
+    return m_contentname;
+  }
 
-  Interest& setContentName(Name contentName) {
+  Interest&
+  setContentName(Name contentName)
+  {
     m_contentname = contentName;
     m_wire.reset();
     return *this;
   }
 
- public:  // ParametersSha256DigestComponent support
-  static bool getAutoCheckParametersDigest() {
+public: // ParametersSha256DigestComponent support
+  static bool
+  getAutoCheckParametersDigest()
+  {
     return s_autoCheckParametersDigest;
   }
 
-  static void setAutoCheckParametersDigest(bool b) {
+  static void
+  setAutoCheckParametersDigest(bool b)
+  {
     s_autoCheckParametersDigest = b;
   }
 
@@ -332,7 +397,7 @@ class Interest : public PacketBase,
    */
   bool isParametersDigestValid() const;
 
- private:
+private:
   void setApplicationParametersInternal(Block parameters);
 
   NDN_CXX_NODISCARD shared_ptr<Buffer> computeParametersDigest() const;
@@ -357,12 +422,12 @@ class Interest : public PacketBase,
   static ssize_t findParametersDigestComponent(const Name& name);
 
 #ifdef NDN_CXX_HAVE_TESTS
- public:
+public:
   /// If true, not setting CanBePrefix results in an error in wireEncode().
   static bool s_errorIfCanBePrefixUnset;
-#endif  // NDN_CXX_HAVE_TESTS
+#endif // NDN_CXX_HAVE_TESTS
 
- private:
+private:
   static boost::logic::tribool s_defaultCanBePrefix;
   static bool s_autoCheckParametersDigest;
 
@@ -386,16 +451,16 @@ class Interest : public PacketBase,
 
   mutable Block m_wire;
 
-  mutable Name m_destid;           // 当座の行き先
-  mutable Name m_agentid;          // NDN探索時のAgent Node保持用
-  mutable Name m_contentname;      // Kademlia時のContent Name保持用
-  mutable Name m_protocol;                 // Kademlia時のContent Name保持用
+  mutable Name m_destid;      // 当座の行き先
+  mutable Name m_agentid;     // NDN探索時のAgent Node保持用
+  mutable Name m_contentname; // Kademlia時のContent Name保持用
+  mutable Name m_protocol;    // Kademlia時のContent Name保持用
 };
 
 NDN_CXX_DECLARE_WIRE_ENCODE_INSTANTIATIONS(Interest);
 
 std::ostream& operator<<(std::ostream& os, const Interest& interest);
 
-}  // namespace ndn
+} // namespace ndn
 
-#endif  // NDN_INTEREST_HPP
+#endif // NDN_INTEREST_HPP
