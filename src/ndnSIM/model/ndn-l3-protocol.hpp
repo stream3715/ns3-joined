@@ -95,7 +95,7 @@ public:
   /**
    * \brief Default constructor. Creates an empty stack without forwarding strategy set
    */
-  L3Protocol(std::string id);
+  L3Protocol();
 
   virtual ~L3Protocol();
 
@@ -167,6 +167,12 @@ public:
   injectInterest(const Interest& interest);
 
   typedef std::function<std::unique_ptr<nfd::cs::Policy>()> PolicyCreationCallback;
+
+  /**
+   * \brief Set Node ID
+   */
+  void
+  setNodeId(const std::string& id);
 
   /**
    * \brief Set the replacement policy of NFD's CS

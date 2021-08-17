@@ -87,18 +87,16 @@ void KoNDNStrategy::afterReceiveInterest(
     if(it == nexthops.end()) {
       NFD_LOG_DEBUG(interest << " from=" << ingress << " noNextHop");
       if(protocol.toUri() == "kademlia") {
-        Interest newInterest;
-        newInterest = Interest(interest.getContentName(),
-                                   ndn::DEFAULT_INTEREST_LIFETIME);
-        newInterest.setAgentNodeID(this->getNodeID());
+        interest.setProtocol("ndn");
+        interest.setAgentNodeID(this->getNodeID());
 
         it = std::find_if(nexthops.begin(), nexthops.end(),
                           [&](const auto &nexthop) {
-                            return isNextHopEligible(ingress.face, newInterest,
+                            return isNextHopEligible(ingress.face, interest,
                                                      nexthop, pitEntry);
                           });
         auto egress = FaceEndpoint(it->getFace(), 0);
-        this->sendInterest(pitEntry, egress, newInterest);
+        this->sendInterest(pitEntry, egress, interest);
         return;
       } else {
         lp::NackHeader nackHeader;

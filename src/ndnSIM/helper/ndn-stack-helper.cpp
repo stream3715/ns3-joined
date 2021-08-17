@@ -172,8 +172,9 @@ StackHelper::doInstall(Ptr<Node> node) const
     ndn->getConfig().put("ndnSIM.disable_strategy_choice_manager", true);
   }
 
-  ndn->getConfig().put("tables.cs_max_packets", m_maxCsSize);
+  ndn->setNodeId(node->GetNodeId());
 
+  ndn->getConfig().put("tables.cs_max_packets", m_maxCsSize);
   ndn->setCsReplacementPolicy(m_csPolicyCreationFunc);
 
   // Aggregate L3Protocol on node (must be after setting ndnSIM CS)

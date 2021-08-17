@@ -110,7 +110,7 @@ L3Protocol::GetTypeId(void)
 
 class L3Protocol::Impl {
 private:
-  Impl(std::string id)
+  Impl()
   {
     // Do not modify initial config file. Use helpers to set specific NFD parameters
     std::string initialConfig = "general\n"
@@ -162,7 +162,6 @@ private:
 
     std::istringstream input(initialConfig);
     boost::property_tree::read_info(input, m_config);
-    m_id = make_shared<std::string>(id);
   }
 
   friend class L3Protocol;
@@ -197,8 +196,8 @@ private:
   PolicyCreationCallback m_policy;
 };
 
-L3Protocol::L3Protocol(std::string id)
-  : m_impl(new Impl(id))
+L3Protocol::L3Protocol()
+  : m_impl(new Impl())
 {
   NS_LOG_FUNCTION(this);
 }
@@ -247,6 +246,12 @@ void
 L3Protocol::injectInterest(const Interest& interest)
 {
   m_impl->m_internalClientFaceForInjects->expressInterest(interest, nullptr, nullptr, nullptr);
+}
+
+void
+L3Protocol::setNodeId(const std::string& id)
+{
+  m_impl->m_id = make_shared<std::string>(id);
 }
 
 void

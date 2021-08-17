@@ -179,19 +179,13 @@ void Consumer::SendPacket() {
     seq = m_seq++;
   }
 
-  //
-  std::string prefixKademlia = "kademlia://";
-  std::string prefixNdn = "ndn://";
-
   clx::sha1 hash;
-  std::string uri = m_interestName.toUri().substr(1);
 
   std::string contentHash =
-      hash.encode(boost::lexical_cast<std::string>(uri))
+      hash.encode(boost::lexical_cast<std::string>(m_interestName.toUri()))
           .to_string();
 
-  shared_ptr<Name> nameWithSequence =
-      make_shared<Name>(Name(prefixKademlia + contentHash));
+  shared_ptr<Name> nameWithSequence = make_shared<Name>(Name(contentHash));
 
   nameWithSequence->appendSequenceNumber(seq);
   //
