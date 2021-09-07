@@ -331,42 +331,36 @@ Interest::wireDecode(const Block& wire)
       lastElement = 8;
       break;
     }
-    case tlv::DestinationNodeID: {
-      if (lastElement >= 9) {
-        NDN_THROW(Error("DestinationNodeID element is out of order"));
+    case tlv::Name: {
+      Name newName(*element);
+
+      switch (lastElement) {
+      case 8:
+        m_destid = newName;
+        lastElement = 9;
+        break;
+
+      case 9:
+        m_agentid = newName;
+        lastElement = 10;
+        break;
+
+      case 10:
+        m_contentname = newName;
+        lastElement = 11;
+        break;
+
+      case 11:
+        m_protocol = newName;
+        lastElement = 12;
+        break;
+
+      default:
+        break;
       }
-      Name destName(*element);
-      m_destid = destName;
-      lastElement = 9;
       break;
     }
-    case tlv::AgentNodeID: {
-      if (lastElement >= 10) {
-        NDN_THROW(Error("AgentNodeID element is out of order"));
-      }
-      Name agentName(*element);
-      m_agentid = agentName;
-      lastElement = 10;
-      break;
-    }
-    case tlv::ContentName: {
-      if (lastElement >= 11) {
-        NDN_THROW(Error("ContentName element is out of order"));
-      }
-      Name contentName(*element);
-      m_contentname = contentName;
-      lastElement = 11;
-      break;
-    }
-    case tlv::Protocol: {
-      if (lastElement >= 12) {
-        NDN_THROW(Error("Protocol element is out of order"));
-      }
-      Name protocol(*element);
-      m_protocol = protocol;
-      lastElement = 12;
-      break;
-    }
+
     default: { // unrecognized element
       // if the TLV-TYPE is critical, abort decoding
       if (tlv::isCriticalType(element->type())) {
