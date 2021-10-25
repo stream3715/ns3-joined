@@ -339,8 +339,8 @@ protected: // actions
 protected: // accessors
   /** \brief performs a FIB lookup, considering Link object if present
    */
-  const fib::Entry&
-  lookupFib(const pit::Entry& pitEntry) const;
+  const fib::Entry& lookupFib(const pit::Entry& pitEntry) const;
+  const fib::Entry& lookupFib(const pit::Entry& pitEntry, std::string currentId) const;
 
   MeasurementsAccessor&
   getMeasurements()

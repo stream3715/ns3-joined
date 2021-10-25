@@ -37,68 +37,74 @@ NFD_REGISTER_STRATEGY(KoNDNStrategy);
 const time::milliseconds KoNDNStrategy::RETX_SUPPRESSION_INITIAL(10);
 const time::milliseconds KoNDNStrategy::RETX_SUPPRESSION_MAX(250);
 
-KoNDNStrategy::KoNDNStrategy(Forwarder &forwarder, const Name &name)
-    : Strategy(forwarder),
-      ProcessNackTraits(this),
-      m_retxSuppression(RETX_SUPPRESSION_INITIAL,
-                        RetxSuppressionExponential::DEFAULT_MULTIPLIER,
-                        RETX_SUPPRESSION_MAX) {
+KoNDNStrategy::KoNDNStrategy(Forwarder& forwarder, const Name& name)
+  : Strategy(forwarder)
+  , ProcessNackTraits(this)
+  , m_retxSuppression(RETX_SUPPRESSION_INITIAL, RetxSuppressionExponential::DEFAULT_MULTIPLIER,
+                      RETX_SUPPRESSION_MAX)
+{
   ParsedInstanceName parsed = parseInstanceName(name);
-  if(!parsed.parameters.empty()) {
-    NDN_THROW(
-        std::invalid_argument("KoNDNStrategy does not accept parameters"));
+  if (!parsed.parameters.empty()) {
+    NDN_THROW(std::invalid_argument("KoNDNStrategy does not accept parameters"));
   }
-  if(parsed.version && *parsed.version != getStrategyName()[-1].toVersion()) {
-    NDN_THROW(std::invalid_argument("KoNDNStrategy does not support version " +
-                                    to_string(*parsed.version)));
+  if (parsed.version && *parsed.version != getStrategyName()[-1].toVersion()) {
+    NDN_THROW(std::invalid_argument("KoNDNStrategy does not support version "
+                                    + to_string(*parsed.version)));
   }
   this->setInstanceName(makeInstanceName(name, getStrategyName()));
   this->m_nodeId = forwarder.getNodeId();
 }
 
-const Name &KoNDNStrategy::getStrategyName() {
+const Name&
+KoNDNStrategy::getStrategyName()
+{
   static Name strategyName("/localhost/nfd/strategy/kondn/%FD%05");
   return strategyName;
 }
 
-void KoNDNStrategy::afterReceiveInterest(
-    const FaceEndpoint &ingress, const Interest &interest,
-    const shared_ptr<pit::Entry> &pitEntry) {
-  RetxSuppressionResult suppression =
-      m_retxSuppression.decidePerPitEntry(*pitEntry);
-  if(suppression == RetxSuppressionResult::SUPPRESS) {
+void
+KoNDNStrategy::afterReceiveInterest(const FaceEndpoint& ingress, const Interest& interest,
+                                    const shared_ptr<pit::Entry>& pitEntry)
+{
+  RetxSuppressionResult suppression = m_retxSuppression.decidePerPitEntry(*pitEntry);
+  if (suppression == RetxSuppressionResult::SUPPRESS) {
     NFD_LOG_DEBUG(interest << " from=" << ingress << " suppressed");
     return;
   }
 
   Name protocol = interest.getProtocol();
+  NFD_LOG_DEBUG(interest << " protocol is " << protocol.toUri());
+  NFD_LOG_DEBUG(interest << " name: " << interest.getName().toUri()
+                         << " hash: " << interest.getHashedName().toUri());
 
-  const fib::Entry &fibEntry = this->lookupFib(*pitEntry);
-  const fib::NextHopList &nexthops = fibEntry.getNextHops();
+  const fib::Entry& fibEntry = this->lookupFib(*pitEntry, this->getNodeID().toUri().substr(1));
+  const fib::NextHopList& nexthops = fibEntry.getNextHops();
   auto it = nexthops.end();
 
-  if(suppression == RetxSuppressionResult::NEW) {
+  if (suppression == RetxSuppressionResult::NEW) {
     // forward to nexthop with lowest cost except downstream
-    it = std::find_if(
-        nexthops.begin(), nexthops.end(), [&](const auto &nexthop) {
-          return isNextHopEligible(ingress.face, interest, nexthop, pitEntry);
-        });
+    it = std::find_if(nexthops.begin(), nexthops.end(), [&](const auto& nexthop) {
+      return isNextHopEligible(ingress.face, interest, nexthop, pitEntry);
+    });
 
-    if(it == nexthops.end()) {
+    if (it == nexthops.end()) {
       NFD_LOG_DEBUG(interest << " from=" << ingress << " noNextHop");
-      if(protocol.toUri() == "kademlia") {
+      if (protocol.toUri() == "/kademlia") {
+        NFD_LOG_DEBUG("******** SWITCH TO NDN ROUTING ********");
         interest.setProtocol("ndn");
         interest.setAgentNodeID(this->getNodeID());
 
-        it = std::find_if(nexthops.begin(), nexthops.end(),
-                          [&](const auto &nexthop) {
-                            return isNextHopEligible(ingress.face, interest,
-                                                     nexthop, pitEntry);
-                          });
+        const fib::Entry& newFibEntry = this->lookupFib(*pitEntry);
+        const fib::NextHopList& ndnNexthops = newFibEntry.getNextHops();
+
+        it = std::find_if(ndnNexthops.begin(), ndnNexthops.end(), [&](const auto& nexthop) {
+          return isNextHopEligible(ingress.face, interest, nexthop, pitEntry);
+        });
         auto egress = FaceEndpoint(it->getFace(), 0);
         this->sendInterest(pitEntry, egress, interest);
         return;
-      } else {
+      }
+      else if (protocol.toUri() == "/ndn") {
         lp::NackHeader nackHeader;
         nackHeader.setReason(lp::NackReason::NO_ROUTE);
         this->sendNack(pitEntry, ingress, nackHeader);
@@ -109,44 +115,42 @@ void KoNDNStrategy::afterReceiveInterest(
     }
 
     auto egress = FaceEndpoint(it->getFace(), 0);
-    NFD_LOG_DEBUG(interest << " from=" << ingress
-                           << " newPitEntry-to=" << egress);
+    NFD_LOG_DEBUG(interest << " from=" << ingress << " newPitEntry-to=" << egress);
     this->sendInterest(pitEntry, egress, interest);
     return;
   }
 
   // find an unused upstream with lowest cost except downstream
-  it = std::find_if(nexthops.begin(), nexthops.end(), [&](const auto &nexthop) {
+  it = std::find_if(nexthops.begin(), nexthops.end(), [&](const auto& nexthop) {
     return isNextHopEligible(ingress.face, interest, nexthop, pitEntry, true,
                              time::steady_clock::now());
   });
 
-  if(it != nexthops.end()) {
+  if (it != nexthops.end()) {
     auto egress = FaceEndpoint(it->getFace(), 0);
     this->sendInterest(pitEntry, egress, interest);
-    NFD_LOG_DEBUG(interest << " from=" << ingress
-                           << " retransmit-unused-to=" << egress);
+    NFD_LOG_DEBUG(interest << " from=" << ingress << " retransmit-unused-to=" << egress);
     return;
   }
 
   // find an eligible upstream that is used earliest
-  it = findEligibleNextHopWithEarliestOutRecord(ingress.face, interest,
-                                                nexthops, pitEntry);
-  if(it == nexthops.end()) {
+  it = findEligibleNextHopWithEarliestOutRecord(ingress.face, interest, nexthops, pitEntry);
+  if (it == nexthops.end()) {
     NFD_LOG_DEBUG(interest << " from=" << ingress << " retransmitNoNextHop");
-  } else {
+  }
+  else {
     auto egress = FaceEndpoint(it->getFace(), 0);
     this->sendInterest(pitEntry, egress, interest);
-    NFD_LOG_DEBUG(interest << " from=" << ingress
-                           << " retransmit-retry-to=" << egress);
+    NFD_LOG_DEBUG(interest << " from=" << ingress << " retransmit-retry-to=" << egress);
   }
 }
 
-void KoNDNStrategy::afterReceiveNack(const FaceEndpoint &ingress,
-                                     const lp::Nack &nack,
-                                     const shared_ptr<pit::Entry> &pitEntry) {
+void
+KoNDNStrategy::afterReceiveNack(const FaceEndpoint& ingress, const lp::Nack& nack,
+                                const shared_ptr<pit::Entry>& pitEntry)
+{
   this->processNack(ingress.face, nack, pitEntry);
 }
 
-}  // namespace fw
-}  // namespace nfd
+} // namespace fw
+} // namespace nfd

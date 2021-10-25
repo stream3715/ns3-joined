@@ -17,7 +17,7 @@
             "environment": [
                 {
                     "Name": "NS_LOG",
-                    "Value": "ndn.Consumer:ndn.Producer"
+                    "Value": "*=level_debug|prefix_func|prefix_time|prefix_node"
                 },
             ],
             "externalConsole": false,
@@ -62,27 +62,27 @@
             "environment": [
                 {
                     "Name": "NS_LOG",
-                    "Value": "ndn.Producer:ndn.Consumer"
+                    "Value": "*=level_debug|prefix_func|prefix_time|prefix_node"
                 },
                 {
                     "Name": "PYTHONPATH",
-                    "Value": "/home/ubuntu/ndnSIM/ns-3/build/bindings/python:/home/ubuntu/ndnSIM/ns-3/src/visualizer:/home/ubuntu/ndnSIM/pybindgen"
+                    "Value": "/home/strea/ndnSIM/ns-3/build/bindings/python:/home/strea/ndnSIM/ns-3/src/visualizer:/home/strea/ndnSIM/pybindgen"
                 },
                 {
                     "Name": "LD_LIBRARY_PATH",
-                    "Value": "/usr/lib/gcc/x86_64-linux-gnu/7:/home/ubuntu/ndnSIM/ns-3/build/lib"
+                    "Value": "/usr/lib/gcc/x86_64-linux-gnu/9:/home/strea/ndnSIM/ns-3/build/lib"
                 },
                 {
                     "Name": "NS3_MODULE_PATH",
-                    "Value": "/usr/lib/gcc/x86_64-linux-gnu/7:/home/ubuntu/ndnSIM/ns-3/build/lib"
+                    "Value": "/usr/lib/gcc/x86_64-linux-gnu/7:/home/strea/ndnSIM/ns-3/build/lib"
                 },
                 {
                     "Name": "NS3_EXECUTABLE_PATH",
-                    "Value": "/home/ubuntu/ndnSIM/ns-3/build/src/fd-net-device:/home/ubuntu/ndnSIM/ns-3/build/src/tap-bridge"
+                    "Value": "/home/strea/ndnSIM/ns-3/build/src/fd-net-device:/home/strea/ndnSIM/ns-3/build/src/tap-bridge"
                 },
                 {
                     "Name": "PATH",
-                    "Value": "/home/ubuntu/ndnSIM/ns-3/build/src/fd-net-device:/home/ubuntu/ndnSIM/ns-3/build/src/tap-bridge:/home/ubuntu/.vscode-server/bin/054a9295330880ed74ceaedda236253b4f39a335/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/mnt/c/Program Files (x86)/Common Files/Oracle/Java/javapath:/mnt/c/Python39/Scripts/:/mnt/c/Python39/:/mnt/c/Windows/system32:/mnt/c/Windows:/mnt/c/Windows/System32/Wbem:/mnt/c/Windows/System32/WindowsPowerShell/v1.0/:/mnt/c/Windows/System32/OpenSSH/:/mnt/c/ProgramData/chocolatey/bin:/mnt/c/Program Files (x86)/Intel/Intel(R) Management Engine Components/DAL:/mnt/c/Program Files/Intel/Intel(R) Management Engine Components/DAL:/mnt/c/Program Files/NVIDIA Corporation/NVIDIA NvDLISR:/mnt/c/Program Files (x86)/NVIDIA Corporation/PhysX/Common:/mnt/c/Program Files/WinMerge:/mnt/c/Program Files/dotnet/:/mnt/c/HashiCorp/Vagrant/bin:/mnt/c/tools/php80:/mnt/d/Users/ubuntu/AppData/Roaming/Python/Python39/Scripts:/mnt/c/Program Files/Microsoft VS Code/bin:/mnt/c/Program Files/PowerShell/7/:/mnt/c/tools/BCURRAN3:/mnt/c/Program Files/CMake/bin:/mnt/c/Program Files/Git/cmd:/mnt/c/Program Files (x86)/dotnet/:/mnt/c/Program Files/Amazon/AWSCLIV2/:/mnt/d/Users/ubuntu/AppData/Local/Microsoft/WindowsApps:/mnt/d/Users/ubuntu/esp-idf/tools:/mnt/c/texlive/2020/bin/win32:/mnt/d/Users/ubuntu/go/bin:/mnt/d/Users/ubuntu/AppData/Roaming/npm:/mnt/c/tools/msys64:/mnt/c/tools/msys64/mingw64/bin:/mnt/c/tools/msys64/usr/local/bin:/mnt/c/tools/msys64/usr/bin:/mnt/c/tools/msys64/bin:/mnt/d/Users/ubuntu/AppData/Local/Box/Box Edit/:/mnt/d/Users/ubuntu/AppData/Local/Yarn/bin:/mnt/c/Program Files/heroku/bin:/mnt/c/Program Files/Go/bin:/mnt/c/Program Files/nodejs/:/mnt/d/Users/ubuntu/AppData/Local/Microsoft/WindowsApps:/mnt/d/Users/ubuntu/esp-idf/tools:/mnt/c/texlive/2020/bin/win32:/mnt/d/Users/ubuntu/go/bin:/mnt/d/Users/ubuntu/AppData/Roaming/npm:/mnt/c/tools/msys64:/mnt/c/tools/msys64/mingw64/bin:/mnt/c/tools/msys64/usr/local/bin:/mnt/c/tools/msys64/usr/bin:/mnt/c/tools/msys64/bin:/mnt/d/Users/ubuntu/AppData/Local/Box/Box Edit/:/mnt/d/Users/ubuntu/AppData/Local/Yarn/bin:/mnt/c/Program Files/heroku/bin:/snap/bin"
+                    "Value": "/home/strea/ndnSIM/ns-3/build/src/fd-net-device:/home/strea/ndnSIM/ns-3/build/src/tap-bridge:/home/strea/.cache/cloud-code/installer/google-cloud-sdk/bin:/home/strea/.vscode-server/bin/83bd43bc519d15e50c4272c6cf5c1479df196a4d/bin:/home/strea/.nvm/versions/node/v12.22.6/bin:/home/strea/.vscode-server/bin/83bd43bc519d15e50c4272c6cf5c1479df196a4d/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/opt/mssql-tools/bin:/opt/mssql-tools/bin"
                 }
             ],
             "externalConsole": false,

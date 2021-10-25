@@ -56,8 +56,10 @@ bool Interest::s_autoCheckParametersDigest = true;
 Interest::Interest(const Name& name, time::milliseconds lifetime)
 {
   setName(name);
-  setProtocol("kademlia");
   setInterestLifetime(lifetime);
+  setProtocol("kademlia");
+  setAgentNodeID("");
+  setDestinationNodeID("");
 
   if (!boost::logic::indeterminate(s_defaultCanBePrefix)) {
     setCanBePrefix(bool(s_defaultCanBePrefix));
@@ -133,14 +135,8 @@ Interest::wireEncode(EncodingImpl<TAG>& encoder) const
   std::for_each(m_parameters.rbegin(), m_parameters.rend(),
                 [&](const Block& b) { totalLength += encoder.prependBlock(b); });
 
-  // Protocol
-  if (!getProtocol().empty()) {
-    totalLength += getProtocol().wireEncode(encoder);
-  }
-
-  if (!getContentName().empty()) {
-    totalLength += getContentName().wireEncode(encoder);
-  }
+  std::cout << getProtocol() << getHashedName() << getDestinationNodeID() << getAgentNodeID()
+            << std::endl;
 
   // DestinationNodeID
   if (!getDestinationNodeID().empty()) {
@@ -150,6 +146,16 @@ Interest::wireEncode(EncodingImpl<TAG>& encoder) const
   // AgentNodeID
   if (!getAgentNodeID().empty()) {
     totalLength += getAgentNodeID().wireEncode(encoder);
+  }
+
+  // Protocol
+  if (!getProtocol().empty()) {
+    totalLength += getProtocol().wireEncode(encoder);
+  }
+
+  // Hashed name
+  if (!getHashedName().empty()) {
+    totalLength += getHashedName().wireEncode(encoder);
   }
 
   // HopLimit
@@ -333,25 +339,27 @@ Interest::wireDecode(const Block& wire)
     }
     case tlv::Name: {
       Name newName(*element);
+      if (lastElement <= 8)
+        lastElement = 8;
 
       switch (lastElement) {
       case 8:
-        m_destid = newName;
+        m_hashedname = newName;
         lastElement = 9;
         break;
 
       case 9:
-        m_agentid = newName;
+        m_protocol = newName;
         lastElement = 10;
         break;
 
       case 10:
-        m_contentname = newName;
+        m_agentid = newName;
         lastElement = 11;
         break;
 
       case 11:
-        m_protocol = newName;
+        m_destid = newName;
         lastElement = 12;
         break;
 

@@ -41,101 +41,104 @@
 #include "utils/ndn-rtt-mean-deviation.hpp"
 
 NS_LOG_COMPONENT_DEFINE("ndn.Consumer");
+clx::sha1 hash;
 
 namespace ns3 {
 namespace ndn {
 
 NS_OBJECT_ENSURE_REGISTERED(Consumer);
 
-TypeId Consumer::GetTypeId(void) {
+TypeId
+Consumer::GetTypeId(void)
+{
   static TypeId tid =
-      TypeId("ns3::ndn::Consumer")
-          .SetGroupName("Ndn")
-          .SetParent<App>()
-          .AddAttribute("StartSeq", "Initial sequence number", IntegerValue(0),
-                        MakeIntegerAccessor(&Consumer::m_seq),
-                        MakeIntegerChecker<int32_t>())
+    TypeId("ns3::ndn::Consumer")
+      .SetGroupName("Ndn")
+      .SetParent<App>()
+      .AddAttribute("StartSeq", "Initial sequence number", IntegerValue(0),
+                    MakeIntegerAccessor(&Consumer::m_seq), MakeIntegerChecker<int32_t>())
 
-          .AddAttribute("Prefix", "Name of the Interest", StringValue("/"),
-                        MakeNameAccessor(&Consumer::m_interestName),
-                        MakeNameChecker())
-          .AddAttribute("LifeTime", "LifeTime for interest packet",
-                        StringValue("2s"),
-                        MakeTimeAccessor(&Consumer::m_interestLifeTime),
-                        MakeTimeChecker())
+      .AddAttribute("Prefix", "Name of the Interest", StringValue("/"),
+                    MakeNameAccessor(&Consumer::m_interestName), MakeNameChecker())
+      .AddAttribute("LifeTime", "LifeTime for interest packet", StringValue("2s"),
+                    MakeTimeAccessor(&Consumer::m_interestLifeTime), MakeTimeChecker())
 
-          .AddAttribute("RetxTimer",
-                        "Timeout defining how frequent retransmission timeouts "
-                        "should be checked",
-                        StringValue("50ms"),
-                        MakeTimeAccessor(&Consumer::GetRetxTimer,
-                                         &Consumer::SetRetxTimer),
-                        MakeTimeChecker())
+      .AddAttribute("RetxTimer",
+                    "Timeout defining how frequent retransmission timeouts "
+                    "should be checked",
+                    StringValue("50ms"),
+                    MakeTimeAccessor(&Consumer::GetRetxTimer, &Consumer::SetRetxTimer),
+                    MakeTimeChecker())
 
-          .AddTraceSource(
-              "LastRetransmittedInterestDataDelay",
-              "Delay between last retransmitted Interest and received Data",
-              MakeTraceSourceAccessor(
-                  &Consumer::m_lastRetransmittedInterestDataDelay),
-              "ns3::ndn::Consumer::LastRetransmittedInterestDataDelayCallback")
+      .AddTraceSource("LastRetransmittedInterestDataDelay",
+                      "Delay between last retransmitted Interest and received Data",
+                      MakeTraceSourceAccessor(&Consumer::m_lastRetransmittedInterestDataDelay),
+                      "ns3::ndn::Consumer::LastRetransmittedInterestDataDelayCallback")
 
-          .AddTraceSource(
-              "FirstInterestDataDelay",
-              "Delay between first transmitted Interest and received Data",
-              MakeTraceSourceAccessor(&Consumer::m_firstInterestDataDelay),
-              "ns3::ndn::Consumer::FirstInterestDataDelayCallback");
+      .AddTraceSource("FirstInterestDataDelay",
+                      "Delay between first transmitted Interest and received Data",
+                      MakeTraceSourceAccessor(&Consumer::m_firstInterestDataDelay),
+                      "ns3::ndn::Consumer::FirstInterestDataDelayCallback");
 
   return tid;
 }
 
 Consumer::Consumer()
-    : m_rand(CreateObject<UniformRandomVariable>()),
-      m_seq(0),
-      m_seqMax(0)  // don't request anything
+  : m_rand(CreateObject<UniformRandomVariable>())
+  , m_seq(0)
+  , m_seqMax(0) // don't request anything
 {
   NS_LOG_FUNCTION_NOARGS();
 
   m_rtt = CreateObject<RttMeanDeviation>();
 }
 
-void Consumer::SetRetxTimer(Time retxTimer) {
+void
+Consumer::SetRetxTimer(Time retxTimer)
+{
   m_retxTimer = retxTimer;
-  if(m_retxEvent.IsRunning()) {
+  if (m_retxEvent.IsRunning()) {
     // m_retxEvent.Cancel (); // cancel any scheduled cleanup events
-    Simulator::Remove(m_retxEvent);  // slower, but better for memory
+    Simulator::Remove(m_retxEvent); // slower, but better for memory
   }
 
   // schedule even with new timeout
-  m_retxEvent =
-      Simulator::Schedule(m_retxTimer, &Consumer::CheckRetxTimeout, this);
+  m_retxEvent = Simulator::Schedule(m_retxTimer, &Consumer::CheckRetxTimeout, this);
 }
 
-Time Consumer::GetRetxTimer() const { return m_retxTimer; }
+Time
+Consumer::GetRetxTimer() const
+{
+  return m_retxTimer;
+}
 
-void Consumer::CheckRetxTimeout() {
+void
+Consumer::CheckRetxTimeout()
+{
   Time now = Simulator::Now();
 
   Time rto = m_rtt->RetransmitTimeout();
   // NS_LOG_DEBUG ("Current RTO: " << rto.ToDouble (Time::S) << "s");
 
-  while(!m_seqTimeouts.empty()) {
+  while (!m_seqTimeouts.empty()) {
     SeqTimeoutsContainer::index<i_timestamp>::type::iterator entry =
-        m_seqTimeouts.get<i_timestamp>().begin();
-    if(entry->time + rto <= now)  // timeout expired?
+      m_seqTimeouts.get<i_timestamp>().begin();
+    if (entry->time + rto <= now) // timeout expired?
     {
       uint32_t seqNo = entry->seq;
       m_seqTimeouts.get<i_timestamp>().erase(entry);
       OnTimeout(seqNo);
-    } else
-      break;  // nothing else to do. All later packets need not be retransmitted
+    }
+    else
+      break; // nothing else to do. All later packets need not be retransmitted
   }
 
-  m_retxEvent =
-      Simulator::Schedule(m_retxTimer, &Consumer::CheckRetxTimeout, this);
+  m_retxEvent = Simulator::Schedule(m_retxTimer, &Consumer::CheckRetxTimeout, this);
 }
 
 // Application Methods
-void Consumer::StartApplication()  // Called at time specified by Start
+void
+Consumer::StartApplication() // Called at time specified by Start
 {
   NS_LOG_FUNCTION_NOARGS();
 
@@ -145,7 +148,8 @@ void Consumer::StartApplication()  // Called at time specified by Start
   ScheduleNextPacket();
 }
 
-void Consumer::StopApplication()  // Called at time specified by Stop
+void
+Consumer::StopApplication() // Called at time specified by Stop
 {
   NS_LOG_FUNCTION_NOARGS();
 
@@ -156,44 +160,48 @@ void Consumer::StopApplication()  // Called at time specified by Stop
   App::StopApplication();
 }
 
-void Consumer::SendPacket() {
-  if(!m_active) return;
+void
+Consumer::SendPacket()
+{
+  if (!m_active)
+    return;
 
   NS_LOG_FUNCTION_NOARGS();
 
-  uint32_t seq = std::numeric_limits<uint32_t>::max();  // invalid
+  uint32_t seq = std::numeric_limits<uint32_t>::max(); // invalid
 
-  while(m_retxSeqs.size()) {
+  while (m_retxSeqs.size()) {
     seq = *m_retxSeqs.begin();
     m_retxSeqs.erase(m_retxSeqs.begin());
     break;
   }
 
-  if(seq == std::numeric_limits<uint32_t>::max()) {
-    if(m_seqMax != std::numeric_limits<uint32_t>::max()) {
-      if(m_seq >= m_seqMax) {
-        return;  // we are totally done
+  if (seq == std::numeric_limits<uint32_t>::max()) {
+    if (m_seqMax != std::numeric_limits<uint32_t>::max()) {
+      if (m_seq >= m_seqMax) {
+        return; // we are totally done
       }
     }
 
     seq = m_seq++;
   }
 
-  clx::sha1 hash;
+  //  shared_ptr<Name> nameWithSequence = make_shared<Name>(m_interestName);
+  shared_ptr<Name> nameWithSequence = make_shared<Name>(m_interestName);
+  nameWithSequence->appendSequenceNumber(seq);
 
   std::string contentHash =
-      hash.encode(boost::lexical_cast<std::string>(m_interestName.toUri()))
-          .to_string();
+    hash.encode(boost::lexical_cast<std::string>((m_interestName).toUri().substr(1))).to_string();
 
-  shared_ptr<Name> nameWithSequence = make_shared<Name>(Name(contentHash));
-
-  nameWithSequence->appendSequenceNumber(seq);
+  shared_ptr<Name> hashed = make_shared<Name>(Name(contentHash));
   //
 
   // shared_ptr<Interest> interest = make_shared<Interest> ();
   shared_ptr<Interest> interest = make_shared<Interest>();
   interest->setNonce(m_rand->GetValue(0, std::numeric_limits<uint32_t>::max()));
   interest->setName(*nameWithSequence);
+  interest->setHashedName(*hashed);
+
   interest->setCanBePrefix(false);
   time::milliseconds interestLifeTime(m_interestLifeTime.GetMilliSeconds());
   interest->setInterestLifetime(interestLifeTime);
@@ -213,10 +221,13 @@ void Consumer::SendPacket() {
 //          Process incoming packets             //
 ///////////////////////////////////////////////////
 
-void Consumer::OnData(shared_ptr<const Data> data) {
-  if(!m_active) return;
+void
+Consumer::OnData(shared_ptr<const Data> data)
+{
+  if (!m_active)
+    return;
 
-  App::OnData(data);  // tracing inside
+  App::OnData(data); // tracing inside
 
   NS_LOG_FUNCTION(this << data);
 
@@ -228,21 +239,20 @@ void Consumer::OnData(shared_ptr<const Data> data) {
 
   int hopCount = 0;
   auto hopCountTag = data->getTag<lp::HopCountTag>();
-  if(hopCountTag != nullptr) {  // e.g., packet came from local node's cache
+  if (hopCountTag != nullptr) { // e.g., packet came from local node's cache
     hopCount = *hopCountTag;
   }
   NS_LOG_DEBUG("Hop count: " << hopCount);
 
   SeqTimeoutsContainer::iterator entry = m_seqLastDelay.find(seq);
-  if(entry != m_seqLastDelay.end()) {
-    m_lastRetransmittedInterestDataDelay(
-        this, seq, Simulator::Now() - entry->time, hopCount);
+  if (entry != m_seqLastDelay.end()) {
+    m_lastRetransmittedInterestDataDelay(this, seq, Simulator::Now() - entry->time, hopCount);
   }
 
   entry = m_seqFullDelay.find(seq);
-  if(entry != m_seqFullDelay.end()) {
-    m_firstInterestDataDelay(this, seq, Simulator::Now() - entry->time,
-                             m_seqRetxCounts[seq], hopCount);
+  if (entry != m_seqFullDelay.end()) {
+    m_firstInterestDataDelay(this, seq, Simulator::Now() - entry->time, m_seqRetxCounts[seq],
+                             hopCount);
   }
 
   m_seqRetxCounts.erase(seq);
@@ -255,7 +265,9 @@ void Consumer::OnData(shared_ptr<const Data> data) {
   m_rtt->AckSeq(SequenceNumber32(seq));
 }
 
-void Consumer::OnNack(shared_ptr<const lp::Nack> nack) {
+void
+Consumer::OnNack(shared_ptr<const lp::Nack> nack)
+{
   /// tracing inside
   App::OnNack(nack);
 
@@ -263,21 +275,24 @@ void Consumer::OnNack(shared_ptr<const lp::Nack> nack) {
                                     << ", reason: " << nack->getReason());
 }
 
-void Consumer::OnTimeout(uint32_t sequenceNumber) {
+void
+Consumer::OnTimeout(uint32_t sequenceNumber)
+{
   NS_LOG_FUNCTION(sequenceNumber);
   // std::cout << Simulator::Now () << ", TO: " << sequenceNumber << ", current
   // RTO: " << m_rtt->RetransmitTimeout ().ToDouble (Time::S) << "s\n";
 
-  m_rtt->IncreaseMultiplier();  // Double the next RTO
+  m_rtt->IncreaseMultiplier(); // Double the next RTO
   m_rtt->SentSeq(SequenceNumber32(sequenceNumber),
-                 1);  // make sure to disable RTT calculation for this sample
+                 1); // make sure to disable RTT calculation for this sample
   m_retxSeqs.insert(sequenceNumber);
   ScheduleNextPacket();
 }
 
-void Consumer::WillSendOutInterest(uint32_t sequenceNumber) {
-  NS_LOG_DEBUG("Trying to add " << sequenceNumber << " with "
-                                << Simulator::Now() << ". already "
+void
+Consumer::WillSendOutInterest(uint32_t sequenceNumber)
+{
+  NS_LOG_DEBUG("Trying to add " << sequenceNumber << " with " << Simulator::Now() << ". already "
                                 << m_seqTimeouts.size() << " items");
 
   m_seqTimeouts.insert(SeqTimeout(sequenceNumber, Simulator::Now()));
@@ -291,5 +306,5 @@ void Consumer::WillSendOutInterest(uint32_t sequenceNumber) {
   m_rtt->SentSeq(SequenceNumber32(sequenceNumber), 1);
 }
 
-}  // namespace ndn
-}  // namespace ns3
+} // namespace ndn
+} // namespace ns3

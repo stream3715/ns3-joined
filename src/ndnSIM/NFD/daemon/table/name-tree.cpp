@@ -36,9 +36,14 @@ namespace name_tree {
 
 NFD_LOG_INIT(NameTree);
 
-NameTree::NameTree(size_t nBuckets) : m_ht(HashtableOptions(nBuckets)) {}
+NameTree::NameTree(size_t nBuckets)
+  : m_ht(HashtableOptions(nBuckets))
+{
+}
 
-Entry& NameTree::lookup(const Name& name, size_t prefixLen) {
+Entry&
+NameTree::lookup(const Name& name, size_t prefixLen)
+{
   NFD_LOG_TRACE("lookup(" << name << ", " << prefixLen << ')');
   BOOST_ASSERT(prefixLen <= name.size());
   BOOST_ASSERT(prefixLen <= getMaxDepth());
@@ -47,11 +52,11 @@ Entry& NameTree::lookup(const Name& name, size_t prefixLen) {
   const Node* node = nullptr;
   Entry* parent = nullptr;
 
-  for(size_t i = 0; i <= prefixLen; ++i) {
+  for (size_t i = 0; i <= prefixLen; ++i) {
     bool isNew = false;
     std::tie(node, isNew) = m_ht.insert(name, i, hashes);
 
-    if(isNew && parent != nullptr) {
+    if (isNew && parent != nullptr) {
       node->entry.setParent(*parent);
     }
     parent = &node->entry;
@@ -59,10 +64,12 @@ Entry& NameTree::lookup(const Name& name, size_t prefixLen) {
   return node->entry;
 }
 
-Entry& NameTree::lookup(const fib::Entry& fibEntry) {
+Entry&
+NameTree::lookup(const fib::Entry& fibEntry)
+{
   NFD_LOG_TRACE("lookup(FIB " << fibEntry.getPrefix() << ')');
   Entry* nte = this->getEntry(fibEntry);
-  if(nte == nullptr) {
+  if (nte == nullptr) {
     // special case: Fib::s_emptyEntry is unattached
     BOOST_ASSERT(fibEntry.getPrefix().empty());
     return this->lookup(fibEntry.getPrefix());
@@ -72,25 +79,28 @@ Entry& NameTree::lookup(const fib::Entry& fibEntry) {
   return *nte;
 }
 
-Entry& NameTree::lookup(const pit::Entry& pitEntry) {
+Entry&
+NameTree::lookup(const pit::Entry& pitEntry)
+{
   const Name& name = pitEntry.getName();
   NFD_LOG_TRACE("lookup(PIT " << name << ')');
   bool hasDigest = name.size() > 0 && name[-1].isImplicitSha256Digest();
-  if(hasDigest && name.size() <= getMaxDepth()) {
+  if (hasDigest && name.size() <= getMaxDepth()) {
     return this->lookup(name);
   }
 
   Entry* nte = this->getEntry(pitEntry);
   BOOST_ASSERT(nte != nullptr);
-  BOOST_ASSERT(std::count_if(nte->getPitEntries().begin(),
-                             nte->getPitEntries().end(),
-                             [&pitEntry](const auto& pitEntry1) {
-                               return pitEntry1.get() == &pitEntry;
-                             }) == 1);
+  BOOST_ASSERT(
+    std::count_if(nte->getPitEntries().begin(), nte->getPitEntries().end(),
+                  [&pitEntry](const auto& pitEntry1) { return pitEntry1.get() == &pitEntry; })
+    == 1);
   return *nte;
 }
 
-Entry& NameTree::lookup(const measurements::Entry& measurementsEntry) {
+Entry&
+NameTree::lookup(const measurements::Entry& measurementsEntry)
+{
   NFD_LOG_TRACE("lookup(M " << measurementsEntry.getName() << ')');
   Entry* nte = this->getEntry(measurementsEntry);
   BOOST_ASSERT(nte != nullptr);
@@ -99,7 +109,9 @@ Entry& NameTree::lookup(const measurements::Entry& measurementsEntry) {
   return *nte;
 }
 
-Entry& NameTree::lookup(const strategy_choice::Entry& strategyChoiceEntry) {
+Entry&
+NameTree::lookup(const strategy_choice::Entry& strategyChoiceEntry)
+{
   NFD_LOG_TRACE("lookup(SC " << strategyChoiceEntry.getPrefix() << ')');
   Entry* nte = this->getEntry(strategyChoiceEntry);
   BOOST_ASSERT(nte != nullptr);
@@ -108,35 +120,38 @@ Entry& NameTree::lookup(const strategy_choice::Entry& strategyChoiceEntry) {
   return *nte;
 }
 
-size_t NameTree::eraseIfEmpty(Entry* entry, bool canEraseAncestors) {
+size_t
+NameTree::eraseIfEmpty(Entry* entry, bool canEraseAncestors)
+{
   BOOST_ASSERT(entry != nullptr);
 
   size_t nErased = 0;
-  for(Entry* parent = nullptr; entry != nullptr && entry->isEmpty();
-      entry = parent) {
+  for (Entry* parent = nullptr; entry != nullptr && entry->isEmpty(); entry = parent) {
     parent = entry->getParent();
 
-    if(parent != nullptr) {
+    if (parent != nullptr) {
       entry->unsetParent();
     }
 
     m_ht.erase(getNode(*entry));
     ++nErased;
 
-    if(!canEraseAncestors) {
+    if (!canEraseAncestors) {
       break;
     }
   }
 
-  if(nErased == 0) {
+  if (nErased == 0) {
     NFD_LOG_TRACE("not-erase " << entry->getName());
   }
   return nErased;
 }
 
-Entry* NameTree::findExactMatch(const Name& name, size_t prefixLen) const {
+Entry*
+NameTree::findExactMatch(const Name& name, size_t prefixLen) const
+{
   prefixLen = std::min(name.size(), prefixLen);
-  if(prefixLen > getMaxDepth()) {
+  if (prefixLen > getMaxDepth()) {
     return nullptr;
   }
 
@@ -144,19 +159,35 @@ Entry* NameTree::findExactMatch(const Name& name, size_t prefixLen) const {
   return node == nullptr ? nullptr : &node->entry;
 }
 
-Entry* NameTree::findExactIDMatch(const Name& name) const {
-  const Node* node = m_ht.findByID(name);
+Entry*
+NameTree::findExactIDMatch(const Name& name) const
+{
+  const Node* node = m_ht.findByID(name, "");
   return node == nullptr ? nullptr : &node->entry;
 }
 
-Entry* NameTree::findLongestPrefixMatch(
-    const Name& name, const EntrySelector& entrySelector) const {
+Entry*
+NameTree::findLongestIDMatch(const Name& name, std::string currentNode,
+                             const EntrySelector& entrySelector) const
+{
+
+  const Node* node = m_ht.findByID(name, currentNode);
+  if (node != nullptr && entrySelector(node->entry)) {
+    return &node->entry;
+  }
+
+  return nullptr;
+}
+
+Entry*
+NameTree::findLongestPrefixMatch(const Name& name, const EntrySelector& entrySelector) const
+{
   size_t depth = std::min(name.size(), getMaxDepth());
   HashSequence hashes = computeHashes(name, depth);
 
-  for(ssize_t i = depth; i >= 0; --i) {
+  for (ssize_t i = depth; i >= 0; --i) {
     const Node* node = m_ht.find(name, i, hashes);
-    if(node != nullptr && entrySelector(node->entry)) {
+    if (node != nullptr && entrySelector(node->entry)) {
       return &node->entry;
     }
   }
@@ -164,11 +195,12 @@ Entry* NameTree::findLongestPrefixMatch(
   return nullptr;
 }
 
-Entry* NameTree::findLongestPrefixMatch(
-    const Entry& entry1, const EntrySelector& entrySelector) const {
+Entry*
+NameTree::findLongestPrefixMatch(const Entry& entry1, const EntrySelector& entrySelector) const
+{
   Entry* entry = const_cast<Entry*>(&entry1);
-  while(entry != nullptr) {
-    if(entrySelector(*entry)) {
+  while (entry != nullptr) {
+    if (entrySelector(*entry)) {
       return entry;
     }
     entry = entry->getParent();
@@ -176,19 +208,21 @@ Entry* NameTree::findLongestPrefixMatch(
   return nullptr;
 }
 
-Entry* NameTree::findLongestPrefixMatch(
-    const pit::Entry& pitEntry, const EntrySelector& entrySelector) const {
+Entry*
+NameTree::findLongestPrefixMatch(const pit::Entry& pitEntry,
+                                 const EntrySelector& entrySelector) const
+{
   const Entry* nte = this->getEntry(pitEntry);
   BOOST_ASSERT(nte != nullptr);
 
   const Name& name = pitEntry.getName();
   size_t depth = std::min(name.size(), getMaxDepth());
-  if(nte->getName().size() < pitEntry.getName().size()) {
+  if (nte->getName().size() < pitEntry.getName().size()) {
     // PIT entry name either exceeds depth limit or ends with an implicit
     // digest: go deeper
-    for(size_t i = nte->getName().size() + 1; i <= depth; ++i) {
+    for (size_t i = nte->getName().size() + 1; i <= depth; ++i) {
       const Entry* exact = this->findExactMatch(name, i);
-      if(exact == nullptr) {
+      if (exact == nullptr) {
         break;
       }
       nte = exact;
@@ -198,8 +232,9 @@ Entry* NameTree::findLongestPrefixMatch(
   return this->findLongestPrefixMatch(*nte, entrySelector);
 }
 
-boost::iterator_range<NameTree::const_iterator> NameTree::findAllMatches(
-    const Name& name, const EntrySelector& entrySelector) const {
+boost::iterator_range<NameTree::const_iterator>
+NameTree::findAllMatches(const Name& name, const EntrySelector& entrySelector) const
+{
   // As we are using Name Prefix Hash Table, and the current LPM() is
   // implemented as starting from full name, and reduce the number of
   // components by 1 each time, we could use it here.
@@ -207,26 +242,22 @@ boost::iterator_range<NameTree::const_iterator> NameTree::findAllMatches(
   // trie from the root node.
 
   Entry* entry = this->findLongestPrefixMatch(name, entrySelector);
-  return {Iterator(make_shared<PrefixMatchImpl>(*this, entrySelector), entry),
-          end()};
+  return {Iterator(make_shared<PrefixMatchImpl>(*this, entrySelector), entry), end()};
 }
 
-boost::iterator_range<NameTree::const_iterator> NameTree::fullEnumerate(
-    const EntrySelector& entrySelector) const {
-  return {
-      Iterator(make_shared<FullEnumerationImpl>(*this, entrySelector), nullptr),
-      end()};
+boost::iterator_range<NameTree::const_iterator>
+NameTree::fullEnumerate(const EntrySelector& entrySelector) const
+{
+  return {Iterator(make_shared<FullEnumerationImpl>(*this, entrySelector), nullptr), end()};
 }
 
-boost::iterator_range<NameTree::const_iterator> NameTree::partialEnumerate(
-    const Name& prefix,
-    const EntrySubTreeSelector& entrySubTreeSelector) const {
+boost::iterator_range<NameTree::const_iterator>
+NameTree::partialEnumerate(const Name& prefix,
+                           const EntrySubTreeSelector& entrySubTreeSelector) const
+{
   Entry* entry = this->findExactMatch(prefix);
-  return {
-      Iterator(make_shared<PartialEnumerationImpl>(*this, entrySubTreeSelector),
-               entry),
-      end()};
+  return {Iterator(make_shared<PartialEnumerationImpl>(*this, entrySubTreeSelector), entry), end()};
 }
 
-}  // namespace name_tree
-}  // namespace nfd
+} // namespace name_tree
+} // namespace nfd

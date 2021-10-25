@@ -35,10 +35,10 @@ namespace name_tree {
  * Measurements
  */
 class NameTree : noncopyable {
- public:
+public:
   explicit NameTree(size_t nBuckets = 1024);
 
- public:  // information
+public: // information
   /** \brief Maximum depth of the name tree
    *
    *  Calling \c NameTree::lookup with a name with many components would cause
@@ -47,25 +47,39 @@ class NameTree : noncopyable {
    * NameTree entry. Thus, it limits the number of NameTree entries created from
    * a long name, bounding the processing complexity.
    */
-  static constexpr size_t getMaxDepth() { return 32; }
+  static constexpr size_t
+  getMaxDepth()
+  {
+    return 32;
+  }
 
   /** \return number of name tree entries
    */
-  size_t size() const { return m_ht.size(); }
+  size_t
+  size() const
+  {
+    return m_ht.size();
+  }
 
   /** \return number of hashtable buckets
    */
-  size_t getNBuckets() const { return m_ht.getNBuckets(); }
+  size_t
+  getNBuckets() const
+  {
+    return m_ht.getNBuckets();
+  }
 
   /** \return name tree entry on which a table entry is attached,
    *          or nullptr if the table entry is detached
    */
   template <typename EntryT>
-  Entry* getEntry(const EntryT& tableEntry) const {
+  Entry*
+  getEntry(const EntryT& tableEntry) const
+  {
     return Entry::get(tableEntry);
   }
 
- public:  // mutation
+public: // mutation
   /** \brief Find or insert an entry by name
    *
    *  This method seeks a name tree entry of name \c name.getPrefix(prefixLen).
@@ -79,7 +93,11 @@ class NameTree : noncopyable {
 
   /** \brief Equivalent to `lookup(name, name.size())`
    */
-  Entry& lookup(const Name& name) { return this->lookup(name, name.size()); }
+  Entry&
+  lookup(const Name& name)
+  {
+    return this->lookup(name, name.size());
+  }
 
   /** \brief Equivalent to `lookup(fibEntry.getPrefix())`
    *  \param fibEntry a FIB entry attached to this name tree, or \c
@@ -121,11 +139,11 @@ class NameTree : noncopyable {
    */
   size_t eraseIfEmpty(Entry* entry, bool canEraseAncestors = true);
 
- public:  // matching
-          /** \brief Exact match lookup
-           *  \return entry with \c name.getPrefix(prefixLen), or nullptr if it does not
-           * exist
-           */
+public: // matching
+        /** \brief Exact match lookup
+         *  \return entry with \c name.getPrefix(prefixLen), or nullptr if it does not
+         * exist
+         */
   Entry* findExactIDMatch(const Name& name) const;
 
   /** \brief Longest prefix matching
@@ -133,33 +151,31 @@ class NameTree : noncopyable {
    * entrySelector, where no other entry with a longer name satisfies those
    * requirements; or nullptr if no entry satisfying those requirements exists
    */
-  Entry* findLongestIDMatch(
-      const Name& name, const EntrySelector& entrySelector = AnyEntry()) const;
+  Entry* findLongestIDMatch(const Name& name, std::string currentNode, const EntrySelector& entrySelector = AnyEntry()
+                            ) const;
 
   /** \brief Exact match lookup
    *  \return entry with \c name.getPrefix(prefixLen), or nullptr if it does not
    * exist
    */
-  Entry* findExactMatch(
-      const Name& name,
-      size_t prefixLen = std::numeric_limits<size_t>::max()) const;
+  Entry*
+  findExactMatch(const Name& name, size_t prefixLen = std::numeric_limits<size_t>::max()) const;
 
   /** \brief Longest prefix matching
    *  \return entry whose name is a prefix of \p name and passes \p
    * entrySelector, where no other entry with a longer name satisfies those
    * requirements; or nullptr if no entry satisfying those requirements exists
    */
-  Entry* findLongestPrefixMatch(
-      const Name& name, const EntrySelector& entrySelector = AnyEntry()) const;
+  Entry*
+  findLongestPrefixMatch(const Name& name, const EntrySelector& entrySelector = AnyEntry()) const;
 
   /** \brief Equivalent to `findLongestPrefixMatch(entry.getName(),
    * entrySelector)` \note This overload is more efficient than
    *        `findLongestPrefixMatch(const Name&, const EntrySelector&)` in
    * common cases.
    */
-  Entry* findLongestPrefixMatch(
-      const Entry& entry,
-      const EntrySelector& entrySelector = AnyEntry()) const;
+  Entry*
+  findLongestPrefixMatch(const Entry& entry, const EntrySelector& entrySelector = AnyEntry()) const;
 
   /** \brief Equivalent to
    * `findLongestPrefixMatch(getEntry(tableEntry)->getName(), entrySelector)`
@@ -170,9 +186,10 @@ class NameTree : noncopyable {
    * attached to this name tree.
    */
   template <typename EntryT>
-  Entry* findLongestPrefixMatch(
-      const EntryT& tableEntry,
-      const EntrySelector& entrySelector = AnyEntry()) const {
+  Entry*
+  findLongestPrefixMatch(const EntryT& tableEntry,
+                         const EntrySelector& entrySelector = AnyEntry()) const
+  {
     const Entry* nte = this->getEntry(tableEntry);
     BOOST_ASSERT(nte != nullptr);
     return this->findLongestPrefixMatch(*nte, entrySelector);
@@ -184,9 +201,8 @@ class NameTree : noncopyable {
    * common cases. \warning Undefined behavior may occur if \p pitEntry is not
    * attached to this name tree.
    */
-  Entry* findLongestPrefixMatch(
-      const pit::Entry& pitEntry,
-      const EntrySelector& entrySelector = AnyEntry()) const;
+  Entry* findLongestPrefixMatch(const pit::Entry& pitEntry,
+                                const EntrySelector& entrySelector = AnyEntry()) const;
 
   /** \brief All-prefixes match lookup
    *  \return a range where every entry has a name that is a prefix of \p name ,
@@ -207,10 +223,9 @@ class NameTree : noncopyable {
    * tree entry whose name is a prefix of \p name is deleted during the
    * enumeration, undefined behavior may occur.
    */
-  Range findAllMatches(const Name& name,
-                       const EntrySelector& entrySelector = AnyEntry()) const;
+  Range findAllMatches(const Name& name, const EntrySelector& entrySelector = AnyEntry()) const;
 
- public:  // enumeration
+public: // enumeration
   using const_iterator = Iterator;
 
   /** \brief Enumerate all entries
@@ -248,30 +263,38 @@ class NameTree : noncopyable {
    * during the enumeration, it may cause the enumeration to skip entries or
    * visit some entries twice.
    */
-  Range partialEnumerate(const Name& prefix,
-                         const EntrySubTreeSelector& entrySubTreeSelector =
-                             AnyEntrySubTree()) const;
+  Range
+  partialEnumerate(const Name& prefix,
+                   const EntrySubTreeSelector& entrySubTreeSelector = AnyEntrySubTree()) const;
 
   /** \return an iterator to the beginning
    *  \sa fullEnumerate
    */
-  const_iterator begin() const { return fullEnumerate().begin(); }
+  const_iterator
+  begin() const
+  {
+    return fullEnumerate().begin();
+  }
 
   /** \return an iterator to the end
    *  \sa begin()
    */
-  const_iterator end() const { return Iterator(); }
+  const_iterator
+  end() const
+  {
+    return Iterator();
+  }
 
- private:
+private:
   Hashtable m_ht;
 
   friend class EnumerationImpl;
 };
 
-}  // namespace name_tree
+} // namespace name_tree
 
 using name_tree::NameTree;
 
-}  // namespace nfd
+} // namespace nfd
 
-#endif  // NFD_DAEMON_TABLE_NAME_TREE_HPP
+#endif // NFD_DAEMON_TABLE_NAME_TREE_HPP

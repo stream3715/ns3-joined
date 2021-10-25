@@ -362,15 +362,15 @@ public: // element access
   }
 
   const Name&
-  getContentName() const noexcept
+  getHashedName() const noexcept
   {
-    return m_contentname;
+    return m_hashedname;
   }
 
   Interest&
-  setContentName(Name contentName)
+  setHashedName(const Name& hashedName)
   {
-    m_contentname = contentName;
+    m_hashedname = hashedName;
     m_wire.reset();
     return *this;
   }
@@ -453,8 +453,8 @@ private:
 
   mutable Name m_destid;      // 当座の行き先
   mutable Name m_agentid;     // NDN探索時のAgent Node保持用
-  mutable Name m_contentname; // Kademlia時のContent Name保持用
-  mutable Name m_protocol;    // Kademlia時のContent Name保持用
+  mutable Name m_hashedname;  // Kademlia時のContent Name保持用
+  mutable Name m_protocol;    // Protocol保持用
 };
 
 NDN_CXX_DECLARE_WIRE_ENCODE_INSTANTIATIONS(Interest);

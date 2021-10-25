@@ -44,22 +44,19 @@ using HashSequence = std::vector<HashValue>;
 
 /** \brief computes hash value of \p name.getPrefix(prefixLen)
  */
-HashValue
-computeHash(const Name& name, size_t prefixLen = std::numeric_limits<size_t>::max());
+HashValue computeHash(const Name& name, size_t prefixLen = std::numeric_limits<size_t>::max());
 
 /** \brief computes hash values for each prefix of \p name.getPrefix(prefixLen)
  *  \return a hash sequence, where the i-th hash value equals computeHash(name, i)
  */
-HashSequence
-computeHashes(const Name& name, size_t prefixLen = std::numeric_limits<size_t>::max());
+HashSequence computeHashes(const Name& name, size_t prefixLen = std::numeric_limits<size_t>::max());
 
 /** \brief a hashtable node
  *
  *  Zero or more nodes can be added to a hashtable bucket. They are organized as
  *  a doubly linked list through prev and next pointers.
  */
-class Node : noncopyable
-{
+class Node : noncopyable {
 public:
   /** \post entry.getName() == name
    *  \post getNode(entry) == this
@@ -81,15 +78,14 @@ public:
 /** \return node associated with entry
  *  \note This function is for NameTree internal use.
  */
-Node*
-getNode(const Entry& entry);
+Node* getNode(const Entry& entry);
 
 /** \brief invoke a function for each node in a doubly linked list
  *  \tparam N either Node or const Node
  *  \tparam F a functor with signature void F(N*)
  *  \note It's safe to delete the node in the function.
  */
-template<typename N, typename F>
+template <typename N, typename F>
 void
 foreachNode(N* head, const F& func)
 {
@@ -103,15 +99,13 @@ foreachNode(N* head, const F& func)
 
 /** \brief provides options for Hashtable
  */
-class HashtableOptions
-{
+class HashtableOptions {
 public:
   /** \brief constructor
    *  \post initialSize == size
    *  \post minSize == size
    */
-  explicit
-  HashtableOptions(size_t size = 16);
+  explicit HashtableOptions(size_t size = 16);
 
 public:
   /** \brief initial number of buckets
@@ -146,13 +140,11 @@ public:
  *  Hash collision is resolved through a doubly linked list in each bucket.
  *  The number of buckets is adjusted according to how many nodes are stored.
  */
-class Hashtable
-{
+class Hashtable {
 public:
   typedef HashtableOptions Options;
 
-  explicit
-  Hashtable(const Options& options);
+  explicit Hashtable(const Options& options);
 
   /** \brief deallocates all nodes
    */
@@ -195,27 +187,18 @@ public:
   /** \brief find node for ID
    *  \pre name
    */
-  const Node*
-  findByID(const Name& name) const;
-
-  /** \brief find node for ID.getNearest()
-   *  \pre name
-   */
-  const Node*
-  findNearestByID(const Name& name) const;
+  const Node* findByID(const Name& name, std::string currentId) const;
 
   /** \brief find node for name.getPrefix(prefixLen)
    *  \pre name.size() > prefixLen
    */
-  const Node*
-  find(const Name& name, size_t prefixLen) const;
+  const Node* find(const Name& name, size_t prefixLen) const;
 
   /** \brief find node for name.getPrefix(prefixLen)
    *  \pre name.size() > prefixLen
    *  \pre hashes == computeHashes(name)
    */
-  const Node*
-  find(const Name& name, size_t prefixLen, const HashSequence& hashes) const;
+  const Node* find(const Name& name, size_t prefixLen, const HashSequence& hashes) const;
 
   /** \brief find or insert node for name.getPrefix(prefixLen)
    *  \pre name.size() > prefixLen
@@ -227,28 +210,24 @@ public:
   /** \brief delete node
    *  \pre node exists in this hashtable
    */
-  void
-  erase(Node* node);
+  void erase(Node* node);
 
 private:
   /** \brief attach node to bucket
    */
-  void
-  attach(size_t bucket, Node* node);
+  void attach(size_t bucket, Node* node);
 
   /** \brief detach node from bucket
    */
-  void
-  detach(size_t bucket, Node* node);
+  void detach(size_t bucket, Node* node);
 
   std::pair<const Node*, bool>
   findOrInsert(const Name& name, size_t prefixLen, HashValue h, bool allowInsert);
+  std::pair<const Node*, bool> findOrInsertByID(const Name& name, HashValue h, std::string currentId, bool allowInsert);
 
-  void
-  computeThresholds();
+  void computeThresholds();
 
-  void
-  resize(size_t newNBuckets);
+  void resize(size_t newNBuckets);
 
 private:
   std::vector<Node*> m_buckets;

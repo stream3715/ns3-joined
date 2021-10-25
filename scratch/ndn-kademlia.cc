@@ -29,6 +29,8 @@
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/uuid_generators.hpp>
+#include <boost/range/adaptor/indexed.hpp>
+#include <boost/assign.hpp>
 #include <boost/lexical_cast.hpp>
 
 #include <clx/sha1.h>
@@ -70,17 +72,25 @@ main (int argc, char *argv[])
   CommandLine cmd;
   cmd.Parse (argc, argv);
 
+  std::vector<std::string> array = {"c42763c64661f37edc4d45887e6c857699507646",
+                                    "e2a17f016c70062b210f4dca7e4ea61db7d8f0ac",
+                                    "f4eb250cf7dc4b615d110b54e54ebd4018ec232e"};
+
+  /**
   uint32_t nodeCount = 3;
-
-  std::vector<std::string> array;
-
   clx::sha1 hash;
-
   for (uint32_t i = 0; i < nodeCount; i++)
     {
       const uuid id = random_generator () ();
       std::string contentHash = hash.encode (boost::lexical_cast<std::string> (id)).to_string ();
       array.push_back (contentHash);
+    }
+
+  */
+
+  for (vector<std::string>::iterator i = array.begin (); i != array.end (); i++)
+    {
+      std::cout << "[Node ID Seed] Node " << distance (array.begin (), i) << " : " << *i << endl;
     }
 
   // Creating nodes
@@ -102,27 +112,38 @@ main (int argc, char *argv[])
   ndnGlobalRoutingHelper.InstallAll ();
 
   // Choosing forwarding strategy
-  ndn::StrategyChoiceHelper::InstallAll ("/prefix", "/localhost/nfd/strategy/kondn");
+  ndn::StrategyChoiceHelper::InstallAll ("/", "/localhost/nfd/strategy/kondn/%FD%05");
 
   // Installing applications
 
   // Consumer
   ndn::AppHelper consumerHelper ("ns3::ndn::ConsumerCbr");
   // Consumer will request /prefix/0, /prefix/1, ...
-  consumerHelper.SetPrefix ("/prefix");
+  consumerHelper.SetPrefix ("/nakazato.lab/testing");
   consumerHelper.SetAttribute ("Frequency",
-                               StringValue ("10")); // 10 interests a second
+                               StringValue ("2")); // 10 interests a second
   auto apps = consumerHelper.Install (nodes.Get (0)); // first node
   apps.Stop (Seconds (10.0)); // stop the consumer app at 10 seconds mark
 
   // Producer
   ndn::AppHelper producerHelper ("ns3::ndn::Producer");
   // Producer will reply to all requests starting with /prefix
-  producerHelper.SetPrefix ("/prefix");
+  producerHelper.SetPrefix ("/nakazato.lab/testing");
   producerHelper.SetAttribute ("PayloadSize", StringValue ("1024"));
   producerHelper.Install (nodes.Get (2)); // last node
 
-  Simulator::Stop (Seconds (20.0));
+  // Add Routes to Node
+  for (const auto &e : array | boost::adaptors::indexed ())
+    {
+      auto index = e.index ();
+      std::string value = e.value ();
+      ndnGlobalRoutingHelper.AddOrigins ("/" + value, nodes.Get (index));
+    }
+
+  // Calculate and install FIBs
+  GlobalRoutingHelper::CalculateRoutes ();
+
+  Simulator::Stop (Seconds (1.0));
 
   Simulator::Run ();
   Simulator::Destroy ();
