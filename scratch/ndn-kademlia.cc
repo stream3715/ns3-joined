@@ -72,9 +72,13 @@ main (int argc, char *argv[])
   CommandLine cmd;
   cmd.Parse (argc, argv);
 
-  std::vector<std::string> array = {"c42763c64661f37edc4d45887e6c857699507646",
-                                    "e2a17f016c70062b210f4dca7e4ea61db7d8f0ac",
-                                    "f4eb250cf7dc4b615d110b54e54ebd4018ec232e"};
+  std::vector<std::string> array = {
+      "e42763c64661f37edc4d45887e6c857699507646", "c2a17f016c70062b210f4dca7e4ea61db7d8f0ac",
+      "f4eb250cf7dc4b615d110b54e54ebd4018ec232e", "637a81ed8e8217bb01c15c67c39b43b0ab4e20f1",
+      "fbc12b721be870d2a7c35f85eefa8176116f3f75", "7d61c58df413e74b615edf17891b72e8b9897559",
+      "3401e667e3b21395fe99dded1cdeddd20bb66a84", "ff43122edae8e7e3a2b7d8d8bdc3891dcb780e2f",
+      "63a8286d1760cfc39c38cfe3468eed76ffe500eb", "d2bd04146bf0890619217623c65d917c6914a51d",
+      "bfb7759a67daeb65410490b4d98bb9da7d1ea2ce"};
 
   /**
   uint32_t nodeCount = 3;
@@ -100,7 +104,15 @@ main (int argc, char *argv[])
   // Connecting nodes using two links
   PointToPointHelper p2p;
   p2p.Install (nodes.Get (0), nodes.Get (1));
-  p2p.Install (nodes.Get (1), nodes.Get (2));
+  p2p.Install (nodes.Get (1), nodes.Get (4));
+  p2p.Install (nodes.Get (2), nodes.Get (3));
+  p2p.Install (nodes.Get (3), nodes.Get (4));
+  p2p.Install (nodes.Get (4), nodes.Get (5));
+  p2p.Install (nodes.Get (5), nodes.Get (6));
+  p2p.Install (nodes.Get (6), nodes.Get (7));
+  p2p.Install (nodes.Get (6), nodes.Get (9));
+  p2p.Install (nodes.Get (7), nodes.Get (8));
+  p2p.Install (nodes.Get (9), nodes.Get (10));
 
   // Install NDN stack on all nodes
   ndn::StackHelper ndnHelper;
