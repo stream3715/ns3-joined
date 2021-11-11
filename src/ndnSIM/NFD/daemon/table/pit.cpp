@@ -44,6 +44,7 @@ Pit::findOrInsert(const Interest& interest, bool allowInsert)
 {
   // determine which NameTree entry should the PIT entry be attached onto
   const Name& name = interest.getName();
+  const std::string protocol = interest.getProtocolString();
   bool hasDigest = name.size() > 0 && name[-1].isImplicitSha256Digest();
   size_t nteDepth = name.size() - static_cast<int>(hasDigest);
   nteDepth = std::min(nteDepth, NameTree::getMaxDepth());

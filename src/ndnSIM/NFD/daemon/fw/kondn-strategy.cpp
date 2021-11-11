@@ -66,6 +66,7 @@ void
 KoNDNStrategy::afterReceiveInterest(const FaceEndpoint& ingress, const Interest& interest,
                                     const shared_ptr<pit::Entry>& pitEntry)
 {
+  std::string here = this->getNodeID().toUri().substr(1);
   RetxSuppressionResult suppression = m_retxSuppression.decidePerPitEntry(*pitEntry);
   if (suppression == RetxSuppressionResult::SUPPRESS) {
     NFD_LOG_DEBUG(interest << " from=" << ingress << " suppressed");
@@ -90,7 +91,7 @@ KoNDNStrategy::afterReceiveInterest(const FaceEndpoint& ingress, const Interest&
     if (it == nexthops.end()) {
       NFD_LOG_DEBUG(interest << " from=" << ingress << " noNextHop");
       if (protocol.toUri() == "/kademlia") {
-        NFD_LOG_DEBUG("******** SWITCH TO NDN ROUTING ********");
+        std::cout << "********** SWITCH TO NDN ROUTING **********\n";
         interest.setProtocol("ndn");
         interest.setAgentNodeID(this->getNodeID());
 

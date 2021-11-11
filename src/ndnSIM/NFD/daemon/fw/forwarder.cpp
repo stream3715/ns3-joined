@@ -132,7 +132,8 @@ Forwarder::onIncomingInterest(const FaceEndpoint& ingress, const Interest& inter
   shared_ptr<pit::Entry> pitEntry = m_pit.insert(interest).first;
 
   // detect duplicate Nonce in PIT entry
-  int dnw = fw::findDuplicateNonce(*pitEntry, interest.getNonce(), ingress.face);
+  int dnw = fw::findDuplicateNonceWithProtocol(*pitEntry, interest.getNonce(), ingress.face,
+                                               interest.getProtocol());
   bool hasDuplicateNonceInPit = dnw != fw::DUPLICATE_NONCE_NONE;
   if (ingress.face.getLinkType() == ndn::nfd::LINK_TYPE_POINT_TO_POINT) {
     // for p2p face: duplicate Nonce from same incoming face is not loop

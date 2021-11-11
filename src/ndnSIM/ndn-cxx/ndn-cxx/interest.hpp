@@ -122,6 +122,12 @@ public: // element access
     return m_protocol;
   }
 
+  std::string
+  getProtocolString() const noexcept
+  {
+    return m_protocol.toUri().substr(1);
+  }
+
   void setProtocol(const std::string protocol) const;
 
   const Name&

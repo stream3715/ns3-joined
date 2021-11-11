@@ -72,6 +72,11 @@ public:
   bool
   has(const Name& name, uint32_t nonce) const;
 
+  /** \brief Determines if name+nonce+protocol exists
+   *  \return true if name+nonce+protocol exists
+   */
+  bool has(const Name& name, uint32_t nonce, const Name& protocol) const;
+
   /** \brief Records name+nonce
    */
   void

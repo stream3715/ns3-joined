@@ -60,7 +60,8 @@ DeadNonceList::DeadNonceList(time::nanoseconds lifetime)
   }
 
   m_markEvent = getScheduler().schedule(m_markInterval, [this] { mark(); });
-  m_adjustCapacityEvent = getScheduler().schedule(m_adjustCapacityInterval, [this] { adjustCapacity(); });
+  m_adjustCapacityEvent =
+    getScheduler().schedule(m_adjustCapacityInterval, [this] { adjustCapacity(); });
 }
 
 DeadNonceList::~DeadNonceList()
@@ -146,7 +147,8 @@ DeadNonceList::adjustCapacity()
   m_actualMarkCounts.clear();
   this->evictEntries();
 
-  m_adjustCapacityEvent = getScheduler().schedule(m_adjustCapacityInterval, [this] { adjustCapacity(); });
+  m_adjustCapacityEvent =
+    getScheduler().schedule(m_adjustCapacityInterval, [this] { adjustCapacity(); });
 }
 
 void

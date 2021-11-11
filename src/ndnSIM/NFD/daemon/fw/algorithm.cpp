@@ -28,19 +28,20 @@
 namespace nfd {
 namespace fw {
 
-bool wouldViolateScope(const Face& inFace, const Interest& interest,
-                       const Face& outFace) {
-  if(outFace.getScope() == ndn::nfd::FACE_SCOPE_LOCAL) {
+bool
+wouldViolateScope(const Face& inFace, const Interest& interest, const Face& outFace)
+{
+  if (outFace.getScope() == ndn::nfd::FACE_SCOPE_LOCAL) {
     // forwarding to a local face is always allowed
     return false;
   }
 
-  if(scope_prefix::LOCALHOST.isPrefixOf(interest.getName())) {
+  if (scope_prefix::LOCALHOST.isPrefixOf(interest.getName())) {
     // localhost Interests cannot be forwarded to a non-local face
     return true;
   }
 
-  if(scope_prefix::LOCALHOP.isPrefixOf(interest.getName())) {
+  if (scope_prefix::LOCALHOP.isPrefixOf(interest.getName())) {
     // localhop Interests can be forwarded to a non-local face only if it comes
     // from a local face
     return inFace.getScope() != ndn::nfd::FACE_SCOPE_LOCAL;
@@ -50,49 +51,54 @@ bool wouldViolateScope(const Face& inFace, const Interest& interest,
   return false;
 }
 
-bool canForwardToLegacy(const pit::Entry& pitEntry, const Face& face) {
+bool
+canForwardToLegacy(const pit::Entry& pitEntry, const Face& face)
+{
   time::steady_clock::TimePoint now = time::steady_clock::now();
 
-  bool hasUnexpiredOutRecord = std::any_of(
-      pitEntry.out_begin(), pitEntry.out_end(),
-      [&face, &now](const pit::OutRecord& outRecord) {
-        return &outRecord.getFace() == &face && outRecord.getExpiry() >= now;
-      });
-  if(hasUnexpiredOutRecord) {
+  bool hasUnexpiredOutRecord =
+    std::any_of(pitEntry.out_begin(), pitEntry.out_end(),
+                [&face, &now](const pit::OutRecord& outRecord) {
+                  return &outRecord.getFace() == &face && outRecord.getExpiry() >= now;
+                });
+  if (hasUnexpiredOutRecord) {
     return false;
   }
 
-  bool hasUnexpiredOtherInRecord = std::any_of(
-      pitEntry.in_begin(), pitEntry.in_end(),
-      [&face, &now](const pit::InRecord& inRecord) {
-        return &inRecord.getFace() != &face && inRecord.getExpiry() >= now;
-      });
-  if(!hasUnexpiredOtherInRecord) {
+  bool hasUnexpiredOtherInRecord =
+    std::any_of(pitEntry.in_begin(), pitEntry.in_end(),
+                [&face, &now](const pit::InRecord& inRecord) {
+                  return &inRecord.getFace() != &face && inRecord.getExpiry() >= now;
+                });
+  if (!hasUnexpiredOtherInRecord) {
     return false;
   }
 
   return true;
 }
 
-int findDuplicateNonce(const pit::Entry& pitEntry, uint32_t nonce,
-                       const Face& face) {
+int
+findDuplicateNonce(const pit::Entry& pitEntry, uint32_t nonce, const Face& face)
+{
   int dnw = DUPLICATE_NONCE_NONE;
 
-  for(const pit::InRecord& inRecord : pitEntry.getInRecords()) {
-    if(inRecord.getLastNonce() == nonce) {
-      if(&inRecord.getFace() == &face) {
+  for (const pit::InRecord& inRecord : pitEntry.getInRecords()) {
+    if (inRecord.getLastNonce() == nonce) {
+      if (&inRecord.getFace() == &face) {
         dnw |= DUPLICATE_NONCE_IN_SAME;
-      } else {
+      }
+      else {
         dnw |= DUPLICATE_NONCE_IN_OTHER;
       }
     }
   }
 
-  for(const pit::OutRecord& outRecord : pitEntry.getOutRecords()) {
-    if(outRecord.getLastNonce() == nonce) {
-      if(&outRecord.getFace() == &face) {
+  for (const pit::OutRecord& outRecord : pitEntry.getOutRecords()) {
+    if (outRecord.getLastNonce() == nonce) {
+      if (&outRecord.getFace() == &face) {
         dnw |= DUPLICATE_NONCE_OUT_SAME;
-      } else {
+      }
+      else {
         dnw |= DUPLICATE_NONCE_OUT_OTHER;
       }
     }
@@ -101,38 +107,76 @@ int findDuplicateNonce(const pit::Entry& pitEntry, uint32_t nonce,
   return dnw;
 }
 
-bool hasPendingOutRecords(const pit::Entry& pitEntry) {
+int
+findDuplicateNonceWithProtocol(const pit::Entry& pitEntry, uint32_t nonce, const Face& face,
+                               const Name protocol)
+{
+  int dnw = DUPLICATE_NONCE_NONE;
+
+  for (const pit::InRecord& inRecord : pitEntry.getInRecords()) {
+    if (inRecord.getLastNonce() == nonce) {
+      if (&inRecord.getFace() == &face && &inRecord.getInterest().getProtocol() == &protocol) {
+        dnw |= DUPLICATE_NONCE_IN_SAME;
+      }
+      else {
+        dnw |= DUPLICATE_NONCE_IN_OTHER;
+      }
+    }
+  }
+
+  for (const pit::OutRecord& outRecord : pitEntry.getOutRecords()) {
+    if (outRecord.getLastNonce() == nonce) {
+      if (&outRecord.getFace() == &face) {
+        dnw |= DUPLICATE_NONCE_OUT_SAME;
+      }
+      else {
+        dnw |= DUPLICATE_NONCE_OUT_OTHER;
+      }
+    }
+  }
+
+  return dnw;
+}
+
+bool
+hasPendingOutRecords(const pit::Entry& pitEntry)
+{
   time::steady_clock::TimePoint now = time::steady_clock::now();
   return std::any_of(pitEntry.out_begin(), pitEntry.out_end(),
                      [&now](const pit::OutRecord& outRecord) {
-                       return outRecord.getExpiry() >= now &&
-                              outRecord.getIncomingNack() == nullptr;
+                       return outRecord.getExpiry() >= now
+                              && outRecord.getIncomingNack() == nullptr;
                      });
 }
 
-time::steady_clock::TimePoint getLastOutgoing(const pit::Entry& pitEntry) {
+time::steady_clock::TimePoint
+getLastOutgoing(const pit::Entry& pitEntry)
+{
   pit::OutRecordCollection::const_iterator lastOutgoing =
-      std::max_element(pitEntry.out_begin(), pitEntry.out_end(),
-                       [](const pit::OutRecord& a, const pit::OutRecord& b) {
-                         return a.getLastRenewed() < b.getLastRenewed();
-                       });
+    std::max_element(pitEntry.out_begin(), pitEntry.out_end(),
+                     [](const pit::OutRecord& a, const pit::OutRecord& b) {
+                       return a.getLastRenewed() < b.getLastRenewed();
+                     });
   BOOST_ASSERT(lastOutgoing != pitEntry.out_end());
 
   return lastOutgoing->getLastRenewed();
 }
 
-fib::NextHopList::const_iterator findEligibleNextHopWithEarliestOutRecord(
-    const Face& inFace, const Interest& interest,
-    const fib::NextHopList& nexthops, const shared_ptr<pit::Entry>& pitEntry) {
+fib::NextHopList::const_iterator
+findEligibleNextHopWithEarliestOutRecord(const Face& inFace, const Interest& interest,
+                                         const fib::NextHopList& nexthops,
+                                         const shared_ptr<pit::Entry>& pitEntry)
+{
   auto found = nexthops.end();
   auto earliestRenewed = time::steady_clock::TimePoint::max();
 
-  for(auto it = nexthops.begin(); it != nexthops.end(); ++it) {
-    if(!isNextHopEligible(inFace, interest, *it, pitEntry)) continue;
+  for (auto it = nexthops.begin(); it != nexthops.end(); ++it) {
+    if (!isNextHopEligible(inFace, interest, *it, pitEntry))
+      continue;
 
     auto outRecord = pitEntry->getOutRecord(it->getFace());
     BOOST_ASSERT(outRecord != pitEntry->out_end());
-    if(outRecord->getLastRenewed() < earliestRenewed) {
+    if (outRecord->getLastRenewed() < earliestRenewed) {
       found = it;
       earliestRenewed = outRecord->getLastRenewed();
     }
@@ -140,27 +184,27 @@ fib::NextHopList::const_iterator findEligibleNextHopWithEarliestOutRecord(
   return found;
 }
 
-bool isNextHopEligible(const Face& inFace, const Interest& interest,
-                       const fib::NextHop& nexthop,
-                       const shared_ptr<pit::Entry>& pitEntry, bool wantUnused,
-                       time::steady_clock::TimePoint now) {
+bool
+isNextHopEligible(const Face& inFace, const Interest& interest, const fib::NextHop& nexthop,
+                  const shared_ptr<pit::Entry>& pitEntry, bool wantUnused,
+                  time::steady_clock::TimePoint now)
+{
   const Face& outFace = nexthop.getFace();
 
   // do not forward back to the same face, unless it is ad hoc
-  if((outFace.getId() == inFace.getId() &&
-      outFace.getLinkType() != ndn::nfd::LINK_TYPE_AD_HOC) ||
-     (wouldViolateScope(inFace, interest, outFace)))
+  if ((outFace.getId() == inFace.getId() && outFace.getLinkType() != ndn::nfd::LINK_TYPE_AD_HOC)
+      || (wouldViolateScope(inFace, interest, outFace)))
     return false;
 
-  if(wantUnused) {
+  if (wantUnused) {
     // nexthop must not have unexpired out-record
     auto outRecord = pitEntry->getOutRecord(outFace);
-    if(outRecord != pitEntry->out_end() && outRecord->getExpiry() > now) {
+    if (outRecord != pitEntry->out_end() && outRecord->getExpiry() > now) {
       return false;
     }
   }
   return true;
 }
 
-}  // namespace fw
-}  // namespace nfd
+} // namespace fw
+} // namespace nfd

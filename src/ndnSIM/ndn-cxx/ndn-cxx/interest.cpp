@@ -135,9 +135,6 @@ Interest::wireEncode(EncodingImpl<TAG>& encoder) const
   std::for_each(m_parameters.rbegin(), m_parameters.rend(),
                 [&](const Block& b) { totalLength += encoder.prependBlock(b); });
 
-  std::cout << getProtocol() << getHashedName() << getDestinationNodeID() << getAgentNodeID()
-            << std::endl;
-
   // DestinationNodeID
   if (!getDestinationNodeID().empty()) {
     totalLength += getDestinationNodeID().wireEncode(encoder);
