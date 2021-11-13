@@ -102,6 +102,20 @@ bool isNextHopEligible(const Face& inFace, const Interest& interest, const fib::
                        const shared_ptr<pit::Entry>& pitEntry, bool wantUnused = false,
                        time::steady_clock::TimePoint now = time::steady_clock::TimePoint::min());
 
+/** \brief determines whether a NextHop is eligible i.e. not the same inFace
+ *  \param inFace incoming face of current Interest
+ *  \param interest incoming Interest
+ *  \param nexthop next hop
+ *  \param pitEntry PIT entry
+ *  \param nodeId current Node ID
+ *  \param wantUnused if true, NextHop must not have unexpired out-record
+ *  \param now time::steady_clock::now(), ignored if !wantUnused
+ */
+bool isNextHopEligible(const Face& inFace, const Interest& interest, const fib::NextHop& nexthop,
+                       const shared_ptr<pit::Entry>& pitEntry, const Name& nodeId,
+                       bool wantUnused = false,
+                       time::steady_clock::TimePoint now = time::steady_clock::TimePoint::min());
+
 } // namespace fw
 } // namespace nfd
 

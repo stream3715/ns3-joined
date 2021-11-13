@@ -99,7 +99,7 @@ KoNDNStrategy::afterReceiveInterest(const FaceEndpoint& ingress, const Interest&
         const fib::NextHopList& ndnNexthops = newFibEntry.getNextHops();
 
         it = std::find_if(ndnNexthops.begin(), ndnNexthops.end(), [&](const auto& nexthop) {
-          return isNextHopEligible(ingress.face, interest, nexthop, pitEntry);
+          return isNextHopEligible(ingress.face, interest, nexthop, pitEntry, this->getNodeID());
         });
         auto egress = FaceEndpoint(it->getFace(), 0);
         this->sendInterest(pitEntry, egress, interest);

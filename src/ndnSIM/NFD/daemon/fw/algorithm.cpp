@@ -206,5 +206,28 @@ isNextHopEligible(const Face& inFace, const Interest& interest, const fib::NextH
   return true;
 }
 
+bool
+isNextHopEligible(const Face& inFace, const Interest& interest, const fib::NextHop& nexthop,
+                  const shared_ptr<pit::Entry>& pitEntry, const Name& nodeId, bool wantUnused,
+                  time::steady_clock::TimePoint now)
+{
+  const Face& outFace = nexthop.getFace();
+
+  // do not forward back to the same face, unless it is ad hoc
+  if ((outFace.getId() == inFace.getId() && outFace.getLinkType() != ndn::nfd::LINK_TYPE_AD_HOC
+       && interest.getAgentNodeID() != nodeId)
+      || (wouldViolateScope(inFace, interest, outFace)))
+    return false;
+
+  if (wantUnused) {
+    // nexthop must not have unexpired out-record
+    auto outRecord = pitEntry->getOutRecord(outFace);
+    if (outRecord != pitEntry->out_end() && outRecord->getExpiry() > now) {
+      return false;
+    }
+  }
+  return true;
+}
+
 } // namespace fw
 } // namespace nfd
