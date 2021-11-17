@@ -140,6 +140,7 @@ main (int argc, char *argv[])
   // Producer
   ndn::AppHelper producerHelper ("ns3::ndn::Producer");
   // Producer will reply to all requests starting with /prefix
+  ndnGlobalRoutingHelper.AddOrigins ("/nakazato.lab/testing", nodes.Get (2));
   producerHelper.SetPrefix ("/nakazato.lab/testing");
   producerHelper.SetAttribute ("PayloadSize", StringValue ("1024"));
   producerHelper.Install (nodes.Get (2)); // last node

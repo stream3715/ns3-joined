@@ -45,7 +45,8 @@ Entry::canMatch(const Interest& interest, size_t nEqualNameComps) const
                                        nEqualNameComps)
            == 0
          && m_interest->getCanBePrefix() == interest.getCanBePrefix()
-         && m_interest->getMustBeFresh() == interest.getMustBeFresh();
+         && m_interest->getMustBeFresh() == interest.getMustBeFresh()
+         && m_interest->getProtocol() == interest.getProtocol();
   /// \todo #3162 match ForwardingHint field
 }
 
