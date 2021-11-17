@@ -28,7 +28,7 @@
                 "pipeArgs": [
                     "--command-template",
                     "'", // opening quote for command template
-                    "/usr/bin/gdb",
+                    "/usr/local/bin/gdb",
                     "--interpreter=mi", // --interpreter lets vscode talk to gdb
                     "--args",
                     "%s",
@@ -82,12 +82,12 @@
                 },
                 {
                     "Name": "PATH",
-                    "Value": "/home/strea/.goenv/versions/1.17.2/bin:/home/strea/.goenv/bin:/home/strea/ndnSIM/ns-3/build/src/fd-net-device:/home/strea/ndnSIM/ns-3/build/src/tap-bridge:/home/strea/.goenv/versions/1.17.2/bin:/home/strea/.goenv/bin:/home/strea/.cache/cloud-code/installer/google-cloud-sdk/bin:/home/strea/.vscode-server/bin/6cba118ac49a1b88332f312a8f67186f7f3c1643/bin:/home/strea/.goenv/versions/1.17.2/bin:/home/strea/.goenv/shims:/home/strea/.goenv/bin:/home/strea/.nvm/versions/node/v12.22.6/bin:/home/strea/.vscode-server/bin/6cba118ac49a1b88332f312a8f67186f7f3c1643/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/opt/mssql-tools/bin:/home/strea/go/1.17.2/bin:/opt/mssql-tools/bin:/home/strea/go/1.17.2/bin:/opt/mssql-tools/bin:/home/strea/go/1.17.2/bin"
+                    "Value": "/home/strea/.goenv/versions/1.17.2/bin:/home/strea/.goenv/bin:/home/strea/ndnSIM/ns-3/build/src/fd-net-device:/home/strea/ndnSIM/ns-3/build/src/tap-bridge:/home/strea/.cache/cloud-code/installer/google-cloud-sdk/bin:/home/strea/.vscode-server/bin/3a6960b964327f0e3882ce18fcebd07ed191b316/bin:/home/strea/.goenv/versions/1.17.2/bin:/home/strea/.goenv/shims:/home/strea/.goenv/bin:/home/strea/.nvm/versions/node/v12.22.6/bin:/home/strea/.vscode-server/bin/3a6960b964327f0e3882ce18fcebd07ed191b316/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/opt/mssql-tools/bin:/home/strea/go/1.17.2/bin:/opt/mssql-tools/bin:/home/strea/go/1.17.2/bin"
                 }
             ],
             "externalConsole": false,
             "MIMode": "gdb",
-            "miDebuggerPath": "/usr/bin/gdb",
+            "miDebuggerPath": "/usr/local/bin/gdb",
             "setupCommands": [
                 {
                     "description": "Enable pretty-printing for gdb",
