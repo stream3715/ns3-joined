@@ -113,7 +113,9 @@ Forwarder::onIncomingInterest(const FaceEndpoint& ingress, const Interest& inter
   }
 
   // detect duplicate Nonce with Dead Nonce List
-  bool hasDuplicateNonceInDnl = m_deadNonceList.has(interest.getName(), interest.getNonce());
+  bool hasDuplicateNonceInDnl =
+    m_deadNonceList.has(Name(interest.getProtocolString() + interest.getName().toUri()),
+                        interest.getNonce());
   if (hasDuplicateNonceInDnl) {
     // goto Interest loop pipeline
     this->onInterestLoop(ingress, interest);

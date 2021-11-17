@@ -38,6 +38,7 @@ FaceRecord::update(const Interest& interest)
   if (lifetime < 0_ms) {
     lifetime = ndn::DEFAULT_INTEREST_LIFETIME;
   }
+  m_protocol = interest.getProtocol();
   m_expiry = m_lastRenewed + lifetime;
 }
 

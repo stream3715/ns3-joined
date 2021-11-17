@@ -70,7 +70,7 @@ enum DuplicateNonceWhere {
 int findDuplicateNonce(const pit::Entry& pitEntry, uint32_t nonce, const Face& face);
 
 int findDuplicateNonceWithProtocol(const pit::Entry& pitEntry, uint32_t nonce, const Face& face,
-                                   const Name protocol);
+                                   const Name& protocol);
 
 /** \brief determine whether \p pitEntry has any pending out-records
  *  \return true if there is at least one out-record waiting for Data

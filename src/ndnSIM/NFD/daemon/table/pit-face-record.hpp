@@ -57,6 +57,12 @@ public:
     return m_lastNonce;
   }
 
+  const Name&
+  getProtocol()  const noexcept
+  {
+    return m_protocol;
+  }
+
   time::steady_clock::TimePoint
   getLastRenewed() const
   {
@@ -82,6 +88,7 @@ private:
   uint32_t m_lastNonce = 0;
   time::steady_clock::TimePoint m_lastRenewed = time::steady_clock::TimePoint::min();
   time::steady_clock::TimePoint m_expiry = time::steady_clock::TimePoint::min();
+  mutable Name m_protocol;
 };
 
 } // namespace pit

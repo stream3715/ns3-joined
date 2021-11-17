@@ -356,7 +356,7 @@ public: // element access
   const Name&
   getAgentNodeID() const noexcept
   {
-    return m_destid;
+    return m_agentid;
   }
 
   void

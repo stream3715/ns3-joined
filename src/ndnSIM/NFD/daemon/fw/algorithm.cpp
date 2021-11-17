@@ -109,13 +109,13 @@ findDuplicateNonce(const pit::Entry& pitEntry, uint32_t nonce, const Face& face)
 
 int
 findDuplicateNonceWithProtocol(const pit::Entry& pitEntry, uint32_t nonce, const Face& face,
-                               const Name protocol)
+                               const Name& protocol)
 {
   int dnw = DUPLICATE_NONCE_NONE;
 
   for (const pit::InRecord& inRecord : pitEntry.getInRecords()) {
-    if (inRecord.getLastNonce() == nonce) {
-      if (&inRecord.getFace() == &face && &inRecord.getInterest().getProtocol() == &protocol) {
+    if (inRecord.getLastNonce() == nonce && &inRecord.getInterest().getProtocol() == &protocol) {
+      if (&inRecord.getFace() == &face) {
         dnw |= DUPLICATE_NONCE_IN_SAME;
       }
       else {
@@ -125,7 +125,7 @@ findDuplicateNonceWithProtocol(const pit::Entry& pitEntry, uint32_t nonce, const
   }
 
   for (const pit::OutRecord& outRecord : pitEntry.getOutRecords()) {
-    if (outRecord.getLastNonce() == nonce) {
+    if ((outRecord.getLastNonce() == nonce) && (&outRecord.getProtocol() == &protocol)) {
       if (&outRecord.getFace() == &face) {
         dnw |= DUPLICATE_NONCE_OUT_SAME;
       }
@@ -213,9 +213,12 @@ isNextHopEligible(const Face& inFace, const Interest& interest, const fib::NextH
 {
   const Face& outFace = nexthop.getFace();
 
+  std::cout << "outface " << outFace.getId() << " inface " << inFace.getId() << "\n agent "
+            << interest.getAgentNodeID().toUri() << " node " << nodeId.toUri() << "\n";
+
   // do not forward back to the same face, unless it is ad hoc
   if ((outFace.getId() == inFace.getId() && outFace.getLinkType() != ndn::nfd::LINK_TYPE_AD_HOC
-       && interest.getAgentNodeID() != nodeId)
+       && interest.getAgentNodeID().toUri() != nodeId.toUri())
       || (wouldViolateScope(inFace, interest, outFace)))
     return false;
 
