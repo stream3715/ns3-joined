@@ -48,7 +48,7 @@ Cs::Cs(size_t nMaxPackets)
 }
 
 void
-Cs::insert(const Data& data, bool isUnsolicited)
+Cs::insert(const Data& data, bool isUnsolicited, bool isAgent)
 {
   if (!m_shouldAdmit || m_policy->getLimit() == 0) {
     return;
@@ -77,10 +77,10 @@ Cs::insert(const Data& data, bool isUnsolicited)
       entry.clearUnsolicited();
     }
 
-    m_policy->afterRefresh(it);
+    m_policy->afterRefresh(it, isAgent);
   }
   else {
-    m_policy->afterInsert(it);
+    m_policy->afterInsert(it, isAgent);
   }
 }
 

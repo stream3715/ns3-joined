@@ -39,22 +39,22 @@ LruPolicy::LruPolicy()
 }
 
 void
-LruPolicy::doAfterInsert(EntryRef i)
+LruPolicy::doAfterInsert(EntryRef i, bool isAgent)
 {
-  this->insertToQueue(i, true);
+  this->insertToQueue(i, true, isAgent);
   this->evictEntries();
 }
 
 void
-LruPolicy::doAfterRefresh(EntryRef i)
+LruPolicy::doAfterRefresh(EntryRef i, bool isAgent)
 {
-  this->insertToQueue(i, false);
+  this->insertToQueue(i, false, isAgent);
 }
 
 void
 LruPolicy::doBeforeErase(EntryRef i)
 {
-  m_queue.get<1>().erase(i);
+  m_queue[QUEUE_NORMAL].get<1>().erase(i);
 }
 
 void
@@ -68,24 +68,25 @@ LruPolicy::evictEntries()
 {
   BOOST_ASSERT(this->getCs() != nullptr);
   while (this->getCs()->size() > this->getLimit()) {
-    BOOST_ASSERT(!m_queue.empty());
-    EntryRef i = m_queue.front();
-    m_queue.pop_front();
+    BOOST_ASSERT(!m_queue[QUEUE_NORMAL].empty());
+    EntryRef i = m_queue[QUEUE_NORMAL].front();
+    m_queue[QUEUE_NORMAL].pop_front();
     this->emitSignal(beforeEvict, i);
   }
 }
 
 void
-LruPolicy::insertToQueue(EntryRef i, bool isNewEntry)
+LruPolicy::insertToQueue(EntryRef i, bool isNewEntry, bool isAgent)
 {
   Queue::iterator it;
   bool isNew = false;
   // push_back only if i does not exist
-  std::tie(it, isNew) = m_queue.push_back(i);
+  std::tie(it, isNew) = m_queue[isAgent ? QUEUE_AGENT : QUEUE_NORMAL].push_back(i);
 
   BOOST_ASSERT(isNew == isNewEntry);
   if (!isNewEntry) {
-    m_queue.relocate(m_queue.end(), it);
+    m_queue[isAgent ? QUEUE_AGENT : QUEUE_NORMAL]
+      .relocate(m_queue[isAgent ? QUEUE_AGENT : QUEUE_NORMAL].end(), it);
   }
 }
 

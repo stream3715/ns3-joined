@@ -124,14 +124,14 @@ public:
    *  During this process, \p i might be evicted.
    */
   void
-  afterInsert(EntryRef i);
+  afterInsert(EntryRef i, bool isAgent);
 
   /** \brief invoked by CS after an existing entry is refreshed by same Data
    *
    *  The policy may witness this refresh to make better eviction decisions in the future.
    */
   void
-  afterRefresh(EntryRef i);
+  afterRefresh(EntryRef i, bool isAgent);
 
   /** \brief invoked by CS before an entry is erased due to management command
    *  \warning CS must not invoke this method if an entry is erased due to eviction.
@@ -155,8 +155,7 @@ protected:
    *  A policy implementation may decide to evict other entries by emitting \p beforeEvict signal,
    *  in order to keep CS size under limit.
    */
-  virtual void
-  doAfterInsert(EntryRef i) = 0;
+  virtual void doAfterInsert(EntryRef i, bool isAgent) = 0;
 
   /** \brief invoked after an existing entry is refreshed by same Data
    *
@@ -164,7 +163,7 @@ protected:
    *  and adjust its cleanup index.
    */
   virtual void
-  doAfterRefresh(EntryRef i) = 0;
+  doAfterRefresh(EntryRef i, bool isAgent) = 0;
 
   /** \brief invoked before an entry is erased due to management command
    *  \note This will not be invoked for an entry being evicted by policy.

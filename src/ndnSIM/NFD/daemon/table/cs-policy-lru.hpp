@@ -28,26 +28,25 @@
 
 #include "cs-policy.hpp"
 
-#include <boost/multi_index_container.hpp>
-#include <boost/multi_index/sequenced_index.hpp>
 #include <boost/multi_index/ordered_index.hpp>
+#include <boost/multi_index/sequenced_index.hpp>
+#include <boost/multi_index_container.hpp>
 
 namespace nfd {
 namespace cs {
 namespace lru {
 
 using Queue = boost::multi_index_container<
-                Policy::EntryRef,
-                boost::multi_index::indexed_by<
-                  boost::multi_index::sequenced<>,
-                  boost::multi_index::ordered_unique<boost::multi_index::identity<Policy::EntryRef>>
-                >
-              >;
+  Policy::EntryRef,
+  boost::multi_index::indexed_by<
+    boost::multi_index::sequenced<>,
+    boost::multi_index::ordered_unique<boost::multi_index::identity<Policy::EntryRef>>>>;
+
+enum QueueType { QUEUE_NORMAL, QUEUE_AGENT, QUEUE_MAX };
 
 /** \brief Least-Recently-Used (LRU) replacement policy
  */
-class LruPolicy : public Policy
-{
+class LruPolicy : public Policy {
 public:
   LruPolicy();
 
@@ -55,29 +54,23 @@ public:
   static const std::string POLICY_NAME;
 
 private:
-  void
-  doAfterInsert(EntryRef i) override;
+  void doAfterInsert(EntryRef i, bool isAgent) override;
 
-  void
-  doAfterRefresh(EntryRef i) override;
+  void doAfterRefresh(EntryRef i, bool isAgent) override;
 
-  void
-  doBeforeErase(EntryRef i) override;
+  void doBeforeErase(EntryRef i) override;
 
-  void
-  doBeforeUse(EntryRef i) override;
+  void doBeforeUse(EntryRef i) override;
 
-  void
-  evictEntries() override;
+  void evictEntries() override;
 
 private:
   /** \brief moves an entry to the end of queue
    */
-  void
-  insertToQueue(EntryRef i, bool isNewEntry);
+  void insertToQueue(EntryRef i, bool isNewEntry, bool isAgent = false);
 
 private:
-  Queue m_queue;
+  Queue m_queue[QUEUE_MAX];
 };
 
 } // namespace lru

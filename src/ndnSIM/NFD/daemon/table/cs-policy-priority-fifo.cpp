@@ -24,8 +24,8 @@
  */
 
 #include "cs-policy-priority-fifo.hpp"
-#include "cs.hpp"
 #include "common/global.hpp"
+#include "cs.hpp"
 
 namespace nfd {
 namespace cs {
@@ -47,17 +47,17 @@ PriorityFifoPolicy::~PriorityFifoPolicy()
 }
 
 void
-PriorityFifoPolicy::doAfterInsert(EntryRef i)
+PriorityFifoPolicy::doAfterInsert(EntryRef i, bool isAgent)
 {
-  this->attachQueue(i);
+  this->attachQueue(i, isAgent);
   this->evictEntries();
 }
 
 void
-PriorityFifoPolicy::doAfterRefresh(EntryRef i)
+PriorityFifoPolicy::doAfterRefresh(EntryRef i, bool isAgent)
 {
-  this->detachQueue(i);
-  this->attachQueue(i);
+  this->detachQueue(i, isAgent);
+  this->attachQueue(i, isAgent);
 }
 
 void
@@ -85,9 +85,8 @@ PriorityFifoPolicy::evictEntries()
 void
 PriorityFifoPolicy::evictOne()
 {
-  BOOST_ASSERT(!m_queues[QUEUE_UNSOLICITED].empty() ||
-               !m_queues[QUEUE_STALE].empty() ||
-               !m_queues[QUEUE_FIFO].empty());
+  BOOST_ASSERT(!m_queues[QUEUE_UNSOLICITED].empty() || !m_queues[QUEUE_STALE].empty()
+               || !m_queues[QUEUE_FIFO].empty() || !m_queues[QUEUE_AGENT].empty());
 
   EntryRef i;
   if (!m_queues[QUEUE_UNSOLICITED].empty()) {
@@ -99,18 +98,24 @@ PriorityFifoPolicy::evictOne()
   else if (!m_queues[QUEUE_FIFO].empty()) {
     i = m_queues[QUEUE_FIFO].front();
   }
+  else if (!m_queues[QUEUE_FIFO].empty()) {
+    i = m_queues[QUEUE_AGENT].front();
+  }
 
   this->detachQueue(i);
   this->emitSignal(beforeEvict, i);
 }
 
 void
-PriorityFifoPolicy::attachQueue(EntryRef i)
+PriorityFifoPolicy::attachQueue(EntryRef i, bool isAgent)
 {
   BOOST_ASSERT(m_entryInfoMap.find(i) == m_entryInfoMap.end());
 
   EntryInfo* entryInfo = new EntryInfo();
-  if (i->isUnsolicited()) {
+  if (isAgent) {
+    entryInfo->queueType = QUEUE_AGENT;
+  }
+  else if (i->isUnsolicited()) {
     entryInfo->queueType = QUEUE_UNSOLICITED;
   }
   else if (!i->isFresh()) {
@@ -118,8 +123,8 @@ PriorityFifoPolicy::attachQueue(EntryRef i)
   }
   else {
     entryInfo->queueType = QUEUE_FIFO;
-    entryInfo->moveStaleEventId = getScheduler().schedule(i->getData().getFreshnessPeriod(),
-                                                          [=] { moveToStaleQueue(i); });
+    entryInfo->moveStaleEventId =
+      getScheduler().schedule(i->getData().getFreshnessPeriod(), [=] { moveToStaleQueue(i); });
   }
 
   Queue& queue = m_queues[entryInfo->queueType];
@@ -128,7 +133,7 @@ PriorityFifoPolicy::attachQueue(EntryRef i)
 }
 
 void
-PriorityFifoPolicy::detachQueue(EntryRef i)
+PriorityFifoPolicy::detachQueue(EntryRef i, bool isAgent)
 {
   BOOST_ASSERT(m_entryInfoMap.find(i) != m_entryInfoMap.end());
 

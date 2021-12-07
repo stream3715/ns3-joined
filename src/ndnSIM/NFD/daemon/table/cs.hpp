@@ -49,8 +49,7 @@ public:
 
   /** \brief inserts a Data packet
    */
-  void
-  insert(const Data& data, bool isUnsolicited = false);
+  void insert(const Data& data, bool isUnsolicited = false, bool isAgent = false);
 
   /** \brief asynchronously erases entries under \p prefix
    *  \tparam AfterEraseCallback `void f(size_t nErased)`

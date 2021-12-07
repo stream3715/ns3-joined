@@ -316,7 +316,16 @@ Forwarder::onIncomingData(const FaceEndpoint& ingress, const Data& data)
   }
 
   // CS insert
-  m_cs.insert(data);
+  bool isAgent = false;
+
+  for (auto entry : pitMatches) {
+    if (entry->getInterest().getAgentNodeID() == this->getNodeId()) {
+      isAgent = true;
+      break;
+    }
+  }
+
+  m_cs.insert(data, false, isAgent);
 
   // when only one PIT entry is matched, trigger strategy: after receive
   // Data

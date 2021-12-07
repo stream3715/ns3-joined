@@ -36,12 +36,7 @@ namespace priority_fifo {
 
 using Queue = std::list<Policy::EntryRef>;
 
-enum QueueType {
-  QUEUE_UNSOLICITED,
-  QUEUE_STALE,
-  QUEUE_FIFO,
-  QUEUE_MAX
-};
+enum QueueType { QUEUE_UNSOLICITED, QUEUE_STALE, QUEUE_FIFO, QUEUE_AGENT, QUEUE_MAX };
 
 struct EntryInfo
 {
@@ -73,11 +68,9 @@ public:
   static const std::string POLICY_NAME;
 
 private:
-  void
-  doAfterInsert(EntryRef i) override;
+  void doAfterInsert(EntryRef i, bool isAgent) override;
 
-  void
-  doAfterRefresh(EntryRef i) override;
+  void doAfterRefresh(EntryRef i, bool isAgent) override;
 
   void
   doBeforeErase(EntryRef i) override;
@@ -98,14 +91,12 @@ private:
   /** \brief attaches the entry to an appropriate queue
    *  \pre the entry is not in any queue
    */
-  void
-  attachQueue(EntryRef i);
+  void attachQueue(EntryRef i, bool isAgent);
 
   /** \brief detaches the entry from its current queue
    *  \post the entry is not in any queue
    */
-  void
-  detachQueue(EntryRef i);
+  void detachQueue(EntryRef i, bool isAgent = false);
 
   /** \brief moves an entry from FIFO queue to STALE queue
    */

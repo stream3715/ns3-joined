@@ -73,17 +73,17 @@ Policy::setLimit(size_t nMaxEntries)
 }
 
 void
-Policy::afterInsert(EntryRef i)
+Policy::afterInsert(EntryRef i, bool isAgent)
 {
   BOOST_ASSERT(m_cs != nullptr);
-  this->doAfterInsert(i);
+  this->doAfterInsert(i, isAgent);
 }
 
 void
-Policy::afterRefresh(EntryRef i)
+Policy::afterRefresh(EntryRef i, bool isAgent)
 {
   BOOST_ASSERT(m_cs != nullptr);
-  this->doAfterRefresh(i);
+  this->doAfterRefresh(i, isAgent);
 }
 
 void
