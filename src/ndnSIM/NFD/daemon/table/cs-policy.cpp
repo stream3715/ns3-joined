@@ -87,17 +87,17 @@ Policy::afterRefresh(EntryRef i, bool isAgent)
 }
 
 void
-Policy::beforeErase(EntryRef i)
+Policy::beforeErase(EntryRef i, bool isAgent)
 {
   BOOST_ASSERT(m_cs != nullptr);
-  this->doBeforeErase(i);
+  this->doBeforeErase(i, isAgent);
 }
 
 void
-Policy::beforeUse(EntryRef i)
+Policy::beforeUse(EntryRef i, bool isAgent)
 {
   BOOST_ASSERT(m_cs != nullptr);
-  this->doBeforeUse(i);
+  this->doBeforeUse(i, isAgent);
 }
 
 } // namespace cs

@@ -12,7 +12,7 @@
             // my build folder is ${workspaceFolder}/build, substitute yours
             "program": "${workspaceFolder}/build/scratch/ndn-kademlia", //ここに実行したいプログラムを設定する
             "args": [],
-            "stopAtEntry": true,
+            "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [
                 {
@@ -27,14 +27,14 @@
                 // pipeArgs is essentially the entire waf command line arguments
                 "pipeArgs": [
                     "--command-template",
-                    "'", // opening quote for command template
+                    "\"", // opening quote for command template
                     "/usr/local/bin/gdb",
                     "--interpreter=mi", // --interpreter lets vscode talk to gdb
                     "--args",
                     "%s",
-                    "'", // closing quote for command template
+                    "\"", // closing quote for command template
                     "--run",
-                    "ndn-kademlia"
+                    "test-runner"
                 ], //実行するプログラムの指定？
                 "pipeCwd": ""
             },

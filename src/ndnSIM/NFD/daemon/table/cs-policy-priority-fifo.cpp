@@ -61,13 +61,13 @@ PriorityFifoPolicy::doAfterRefresh(EntryRef i, bool isAgent)
 }
 
 void
-PriorityFifoPolicy::doBeforeErase(EntryRef i)
+PriorityFifoPolicy::doBeforeErase(EntryRef i, bool isAgent)
 {
   this->detachQueue(i);
 }
 
 void
-PriorityFifoPolicy::doBeforeUse(EntryRef i)
+PriorityFifoPolicy::doBeforeUse(EntryRef i, bool isAgent)
 {
   BOOST_ASSERT(m_entryInfoMap.find(i) != m_entryInfoMap.end());
 }

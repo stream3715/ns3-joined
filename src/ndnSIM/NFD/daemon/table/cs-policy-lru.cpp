@@ -52,15 +52,15 @@ LruPolicy::doAfterRefresh(EntryRef i, bool isAgent)
 }
 
 void
-LruPolicy::doBeforeErase(EntryRef i)
+LruPolicy::doBeforeErase(EntryRef i, bool isAgent)
 {
-  m_queue[QUEUE_NORMAL].get<1>().erase(i);
+  m_queue[isAgent ? QUEUE_AGENT : QUEUE_NORMAL].get<1>().erase(i);
 }
 
 void
-LruPolicy::doBeforeUse(EntryRef i)
+LruPolicy::doBeforeUse(EntryRef i, bool isAgent)
 {
-  this->insertToQueue(i, false);
+  this->insertToQueue(i, false, isAgent);
 }
 
 void
@@ -82,6 +82,9 @@ LruPolicy::insertToQueue(EntryRef i, bool isNewEntry, bool isAgent)
   bool isNew = false;
   // push_back only if i does not exist
   std::tie(it, isNew) = m_queue[isAgent ? QUEUE_AGENT : QUEUE_NORMAL].push_back(i);
+  if (isNew != isNewEntry && isAgent == false) {
+    std::tie(it, isNew) = m_queue[QUEUE_AGENT].push_back(i);
+  }
 
   BOOST_ASSERT(isNew == isNewEntry);
   if (!isNewEntry) {

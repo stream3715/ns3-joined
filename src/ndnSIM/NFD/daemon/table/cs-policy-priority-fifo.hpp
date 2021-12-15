@@ -72,11 +72,9 @@ private:
 
   void doAfterRefresh(EntryRef i, bool isAgent) override;
 
-  void
-  doBeforeErase(EntryRef i) override;
+  void doBeforeErase(EntryRef i, bool isAgent) override;
 
-  void
-  doBeforeUse(EntryRef i) override;
+  void doBeforeUse(EntryRef i, bool isAgent) override;
 
   void
   evictEntries() override;

@@ -133,9 +133,17 @@ main (int argc, char *argv[])
   // Consumer will request /prefix/0, /prefix/1, ...
   consumerHelper.SetPrefix ("/nakazato.lab/testing");
   consumerHelper.SetAttribute ("Frequency",
-                               StringValue ("2")); // 10 interests a second
+                               StringValue ("3")); // 10 interests a second
   auto apps = consumerHelper.Install (nodes.Get (0)); // first node
   apps.Stop (Seconds (10.0)); // stop the consumer app at 10 seconds mark
+
+  ndn::AppHelper chaserHelper ("ns3::ndn::ConsumerCbr");
+  // Consumer will request /prefix/0, /prefix/1, ...
+  chaserHelper.SetPrefix ("/nakazato.lab/testing");
+  chaserHelper.SetAttribute ("Frequency",
+                             StringValue ("2")); // 10 interests a second
+  auto chaser = chaserHelper.Install (nodes.Get (10));
+  chaser.Stop (Seconds (10.0));
 
   // Producer
   ndn::AppHelper producerHelper ("ns3::ndn::Producer");
@@ -156,7 +164,7 @@ main (int argc, char *argv[])
   // Calculate and install FIBs
   GlobalRoutingHelper::CalculateRoutes ();
 
-  Simulator::Stop (Seconds (1.0));
+  Simulator::Stop (Seconds (5.0));
 
   Simulator::Run ();
   Simulator::Destroy ();

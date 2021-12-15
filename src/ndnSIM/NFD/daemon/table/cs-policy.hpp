@@ -123,28 +123,24 @@ public:
    *  The policy may evict entries if necessary.
    *  During this process, \p i might be evicted.
    */
-  void
-  afterInsert(EntryRef i, bool isAgent);
+  void afterInsert(EntryRef i, bool isAgent = false);
 
   /** \brief invoked by CS after an existing entry is refreshed by same Data
    *
    *  The policy may witness this refresh to make better eviction decisions in the future.
    */
-  void
-  afterRefresh(EntryRef i, bool isAgent);
+  void afterRefresh(EntryRef i, bool isAgent = false);
 
   /** \brief invoked by CS before an entry is erased due to management command
    *  \warning CS must not invoke this method if an entry is erased due to eviction.
    */
-  void
-  beforeErase(EntryRef i);
+  void beforeErase(EntryRef i, bool isAgent = false);
 
   /** \brief invoked by CS before an entry is used to match a lookup
    *
    *  The policy may witness this usage to make better eviction decisions in the future.
    */
-  void
-  beforeUse(EntryRef i);
+  void beforeUse(EntryRef i, bool isAgent = false);
 
 protected:
   /** \brief invoked after a new entry is created in CS
@@ -155,15 +151,14 @@ protected:
    *  A policy implementation may decide to evict other entries by emitting \p beforeEvict signal,
    *  in order to keep CS size under limit.
    */
-  virtual void doAfterInsert(EntryRef i, bool isAgent) = 0;
+  virtual void doAfterInsert(EntryRef i, bool isAgent = false) = 0;
 
   /** \brief invoked after an existing entry is refreshed by same Data
    *
    *  When overridden in a subclass, a policy implementation may witness this operation
    *  and adjust its cleanup index.
    */
-  virtual void
-  doAfterRefresh(EntryRef i, bool isAgent) = 0;
+  virtual void doAfterRefresh(EntryRef i, bool isAgent = false) = 0;
 
   /** \brief invoked before an entry is erased due to management command
    *  \note This will not be invoked for an entry being evicted by policy.
@@ -171,16 +166,14 @@ protected:
    *  When overridden in a subclass, a policy implementation should erase \p i
    *  from its cleanup index without emitted \p afterErase signal.
    */
-  virtual void
-  doBeforeErase(EntryRef i) = 0;
+  virtual void doBeforeErase(EntryRef i, bool isAgent = false) = 0;
 
   /** \brief invoked before an entry is used to match a lookup
    *
    *  When overridden in a subclass, a policy implementation may witness this operation
    *  and adjust its cleanup index.
    */
-  virtual void
-  doBeforeUse(EntryRef i) = 0;
+  virtual void doBeforeUse(EntryRef i, bool isAgent = false) = 0;
 
   /** \brief evicts zero or more entries
    *  \post CS size does not exceed hard limit
