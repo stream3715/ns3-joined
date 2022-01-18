@@ -87,3 +87,4 @@ massif.*
 .lock-wafbuild
 configure
 toggle
+*.tsv
