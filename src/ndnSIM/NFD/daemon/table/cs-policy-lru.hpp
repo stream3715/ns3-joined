@@ -64,6 +64,8 @@ private:
 
   void evictEntries() override;
 
+  void evictEntries(bool isAgent);
+
 private:
   /** \brief moves an entry to the end of queue
    */

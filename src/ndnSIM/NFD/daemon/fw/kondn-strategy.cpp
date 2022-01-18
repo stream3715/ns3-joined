@@ -94,7 +94,7 @@ KoNDNStrategy::afterReceiveInterest(const FaceEndpoint& ingress, const Interest&
         interest.setProtocol("ndn");
         interest.setAgentNodeID(this->getNodeID());
 
-        auto agentNode = interest.getAgentNodeID().toUri();
+        std::string agentNode = interest.getAgentNodeID().toUri();
 
         const fib::Entry& newFibEntry = this->lookupFib(*pitEntry);
         const fib::NextHopList& ndnNexthops = newFibEntry.getNextHops();

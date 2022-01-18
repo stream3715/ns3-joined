@@ -115,12 +115,7 @@ main(int argc, char* argv[])
      "13974e3ff208433a8c82c40a906e98c6", "3f3a2e177c834dd383dca7afd74020d7",
      "6620b642857e48ab8f20c622ddceee79", "ad527423d3a54072abae030f2387308f",
      "546bfdc9efc84e319416a20e55cb3539", "2b95e1568dd14fa89f94733a168d715b",
-     "17b9ba49c7a648d0a2b23bc2ebdb02e4", "fa880995a1854686b0ae54c712b3a83e",
-     "d5b4559167244de0b2a9b9298c8f1f46", "a6a066be15794735bc763f269b324c55",
-     "ea4e1284412e454c89c1da8beb791d43", "23d76fe2ef67440f9453762d36246692",
-     "1fc0236872b64437b162ff6b809b2a27", "8c6c83624e41476c8aa16c84c171af6e",
-     "5a0b3e3925b34509805e5d48f9d4d0d1", "9250e7d91c0f4d1d8b3c36a0d9b6184a",
-     "9eb4645c6abd4d15801d111e65e68d76", "763fbe01daab47e0b94fdcfe4bc9484a"};
+     "17b9ba49c7a648d0a2b23bc2ebdb02e4", "fa880995a1854686b0ae54c712b3a83e"};
 
   /**
   uint32_t nodeCount = 3;
@@ -136,6 +131,7 @@ main(int argc, char* argv[])
 
   // Install NDN stack on all nodes
   ndn::StackHelper ndnHelper;
+  ndnHelper.SetDefaultRoutes(true);
   ndnHelper.InstallAll();
 
   // Installing global routing interface on all nodes
@@ -200,12 +196,12 @@ main(int argc, char* argv[])
   subConsumerNodes.Add(Names::Find<Node>("rtr-36"));
   subConsumerNodes.Add(Names::Find<Node>("rtr-37"));
 
-  ndn::AppHelper consumerHelper("ns3::ndn::ConsumerCbr");
+  ndn::AppHelper consumerHelper("ns3::ndn::ConsumerZipfMandelbrot");
   consumerHelper.SetPrefix(prefix);
   consumerHelper.SetAttribute("Frequency", StringValue("100")); // 100 interests a second
   consumerHelper.Install(mainConsumerNodes);
 
-  ndn::AppHelper subConsumerHelper("ns3::ndn::ConsumerCbr");
+  ndn::AppHelper subConsumerHelper("ns3::ndn::ConsumerZipfMandelbrot");
   subConsumerHelper.SetPrefix(prefix);
   subConsumerHelper.SetAttribute("Frequency", StringValue("100"));
   subConsumerHelper.Install(subConsumerNodes);

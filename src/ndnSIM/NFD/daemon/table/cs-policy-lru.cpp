@@ -42,7 +42,7 @@ void
 LruPolicy::doAfterInsert(EntryRef i, bool isAgent)
 {
   this->insertToQueue(i, true, isAgent);
-  this->evictEntries();
+  this->evictEntries(isAgent);
 }
 
 void
@@ -71,6 +71,18 @@ LruPolicy::evictEntries()
     BOOST_ASSERT(!m_queue[QUEUE_NORMAL].empty());
     EntryRef i = m_queue[QUEUE_NORMAL].front();
     m_queue[QUEUE_NORMAL].pop_front();
+    this->emitSignal(beforeEvict, i);
+  }
+}
+
+void
+LruPolicy::evictEntries(bool isAgent)
+{
+  BOOST_ASSERT(this->getCs() != nullptr);
+  while (this->getCs()->size() > this->getLimit()) {
+    BOOST_ASSERT(!m_queue[isAgent ? QUEUE_AGENT : QUEUE_NORMAL].empty());
+    EntryRef i = m_queue[isAgent ? QUEUE_AGENT : QUEUE_NORMAL].front();
+    m_queue[isAgent ? QUEUE_AGENT : QUEUE_NORMAL].pop_front();
     this->emitSignal(beforeEvict, i);
   }
 }
