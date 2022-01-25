@@ -21,26 +21,26 @@
 
 #include "annotated-topology-reader.hpp"
 
-#include "ns3/nstime.h"
-#include "ns3/log.h"
 #include "ns3/assert.h"
-#include "ns3/names.h"
-#include "ns3/net-device-container.h"
-#include "ns3/point-to-point-helper.h"
-#include "ns3/point-to-point-net-device.h"
-#include "ns3/internet-stack-helper.h"
-#include "ns3/ipv4-address-helper.h"
-#include "ns3/ipv4-global-routing-helper.h"
-#include "ns3/drop-tail-queue.h"
-#include "ns3/ipv4-interface.h"
-#include "ns3/ipv4.h"
-#include "ns3/string.h"
-#include "ns3/pointer.h"
-#include "ns3/uinteger.h"
-#include "ns3/ipv4-address.h"
-#include "ns3/error-model.h"
 #include "ns3/constant-position-mobility-model.h"
 #include "ns3/double.h"
+#include "ns3/drop-tail-queue.h"
+#include "ns3/error-model.h"
+#include "ns3/internet-stack-helper.h"
+#include "ns3/ipv4-address-helper.h"
+#include "ns3/ipv4-address.h"
+#include "ns3/ipv4-global-routing-helper.h"
+#include "ns3/ipv4-interface.h"
+#include "ns3/ipv4.h"
+#include "ns3/log.h"
+#include "ns3/names.h"
+#include "ns3/net-device-container.h"
+#include "ns3/nstime.h"
+#include "ns3/point-to-point-helper.h"
+#include "ns3/point-to-point-net-device.h"
+#include "ns3/pointer.h"
+#include "ns3/string.h"
+#include "ns3/uinteger.h"
 
 #include "model/ndn-l3-protocol.hpp"
 
@@ -120,6 +120,20 @@ AnnotatedTopologyReader::CreateNode(const std::string name, uint32_t systemId)
 }
 
 Ptr<Node>
+AnnotatedTopologyReader::CreateNode(const std::string name, uint32_t systemId, std::string nodeId)
+{
+  NS_LOG_FUNCTION(this << name);
+  m_requiredPartitions = std::max(m_requiredPartitions, systemId + 1);
+
+  Ptr<Node> node = CreateObject<Node>(systemId, nodeId);
+
+  Names::Add(m_path, name, node);
+  m_nodes.Add(node);
+
+  return node;
+}
+
+Ptr<Node>
 AnnotatedTopologyReader::CreateNode(const std::string name, double posX, double posY,
                                     uint32_t systemId)
 {
@@ -127,6 +141,25 @@ AnnotatedTopologyReader::CreateNode(const std::string name, double posX, double 
   m_requiredPartitions = std::max(m_requiredPartitions, systemId + 1);
 
   Ptr<Node> node = CreateObject<Node>(systemId);
+  Ptr<MobilityModel> loc = DynamicCast<MobilityModel>(m_mobilityFactory.Create());
+  node->AggregateObject(loc);
+
+  loc->SetPosition(Vector(posX, posY, 0));
+
+  Names::Add(m_path, name, node);
+  m_nodes.Add(node);
+
+  return node;
+}
+
+Ptr<Node>
+AnnotatedTopologyReader::CreateNode(const std::string name, double posX, double posY,
+                                    uint32_t systemId, std::string nodeId)
+{
+  NS_LOG_FUNCTION(this << name << posX << posY);
+  m_requiredPartitions = std::max(m_requiredPartitions, systemId + 1);
+
+  Ptr<Node> node = CreateObject<Node>(systemId, nodeId);
   Ptr<MobilityModel> loc = DynamicCast<MobilityModel>(m_mobilityFactory.Create());
   node->AggregateObject(loc);
 
@@ -198,6 +231,123 @@ AnnotatedTopologyReader::Read(void)
     else {
       Ptr<UniformRandomVariable> var = CreateObject<UniformRandomVariable>();
       node = CreateNode(name, var->GetValue(0, 200), var->GetValue(0, 200), systemId);
+      // node = CreateNode (name, systemId);
+    }
+  }
+
+  map<string, set<string>> processedLinks; // to eliminate duplications
+
+  if (topgen.eof()) {
+    NS_LOG_ERROR("Topology file " << GetFileName() << " does not have \"link\" section");
+    return m_nodes;
+  }
+
+  // SeekToSection ("link");
+  while (!topgen.eof()) {
+    string line;
+    getline(topgen, line);
+    if (line == "")
+      continue;
+    if (line[0] == '#')
+      continue; // comments
+
+    // NS_LOG_DEBUG ("Input: [" << line << "]");
+
+    istringstream lineBuffer(line);
+    string from, to, capacity, metric, delay, maxPackets, lossRate;
+
+    lineBuffer >> from >> to >> capacity >> metric >> delay >> maxPackets >> lossRate;
+
+    if (processedLinks[to].size() != 0
+        && processedLinks[to].find(from) != processedLinks[to].end()) {
+      continue; // duplicated link
+    }
+    processedLinks[from].insert(to);
+
+    Ptr<Node> fromNode = Names::Find<Node>(m_path, from);
+    NS_ASSERT_MSG(fromNode != 0, from << " node not found");
+    Ptr<Node> toNode = Names::Find<Node>(m_path, to);
+    NS_ASSERT_MSG(toNode != 0, to << " node not found");
+
+    Link link(fromNode, from, toNode, to);
+
+    link.SetAttribute("DataRate", capacity);
+    link.SetAttribute("OSPF", metric);
+
+    if (!delay.empty())
+      link.SetAttribute("Delay", delay);
+    if (!maxPackets.empty())
+      link.SetAttribute("MaxPackets", maxPackets);
+
+    // Saran Added lossRate
+    if (!lossRate.empty())
+      link.SetAttribute("LossRate", lossRate);
+
+    AddLink(link);
+    NS_LOG_DEBUG("New link " << from << " <==> " << to << " / " << capacity << " with " << metric
+                             << " metric (" << delay << ", " << maxPackets << ", " << lossRate
+                             << ")");
+  }
+
+  NS_LOG_INFO("Annotated topology created with " << m_nodes.GetN() << " nodes and " << LinksSize()
+                                                 << " links");
+  topgen.close();
+
+  ApplySettings();
+
+  return m_nodes;
+}
+
+NodeContainer
+AnnotatedTopologyReader::Read(std::vector<std::string> array)
+{
+  ifstream topgen;
+  topgen.open(GetFileName().c_str());
+
+  if (!topgen.is_open() || !topgen.good()) {
+    NS_FATAL_ERROR("Cannot open file " << GetFileName() << " for reading");
+    return m_nodes;
+  }
+
+  uint32_t index = 0;
+
+  while (!topgen.eof()) {
+    string line;
+    getline(topgen, line);
+
+    if (line == "router")
+      break;
+  }
+
+  if (topgen.eof()) {
+    NS_FATAL_ERROR("Topology file " << GetFileName() << " does not have \"router\" section");
+    return m_nodes;
+  }
+
+  while (!topgen.eof()) {
+    string line;
+    getline(topgen, line);
+    if (line[0] == '#')
+      continue; // comments
+    if (line == "link")
+      break; // stop reading nodes
+
+    istringstream lineBuffer(line);
+    string name, city;
+    double latitude = 0, longitude = 0;
+    uint32_t systemId = 0;
+
+    lineBuffer >> name >> city >> latitude >> longitude >> systemId;
+    if (name.empty())
+      continue;
+
+    Ptr<Node> node;
+
+    if (abs(latitude) > 0.001 && abs(latitude) > 0.001)
+      node = CreateNode(name, m_scale * longitude, -m_scale * latitude, systemId, array[index++]);
+    else {
+      Ptr<UniformRandomVariable> var = CreateObject<UniformRandomVariable>();
+      node = CreateNode(name, var->GetValue(0, 200), var->GetValue(0, 200), systemId, array[index++]);
       // node = CreateNode (name, systemId);
     }
   }
@@ -505,7 +655,7 @@ AnnotatedTopologyReader::SaveTopology(const std::string& file)
 
 /// @cond include_hidden
 
-template<class Names>
+template <class Names>
 class name_writer {
 public:
   name_writer(Names _names)
@@ -513,7 +663,7 @@ public:
   {
   }
 
-  template<class VertexOrEdge>
+  template <class VertexOrEdge>
   void
   operator()(std::ostream& out, const VertexOrEdge& v) const
   {
@@ -525,7 +675,7 @@ private:
   Names names;
 };
 
-template<class Names>
+template <class Names>
 inline name_writer<Names>
 make_name_writer(Names n)
 {
@@ -540,12 +690,14 @@ AnnotatedTopologyReader::SaveGraphviz(const std::string& file)
   typedef boost::adjacency_list_traits<boost::setS, boost::setS, boost::undirectedS> Traits;
 
   typedef boost::property<boost::vertex_name_t, std::string,
-                          boost::property<boost::vertex_index_t, uint32_t>> nodeProperty;
+                          boost::property<boost::vertex_index_t, uint32_t>>
+    nodeProperty;
 
   typedef boost::no_property edgeProperty;
 
   typedef boost::adjacency_list<boost::setS, boost::setS, boost::undirectedS, nodeProperty,
-                                edgeProperty> Graph;
+                                edgeProperty>
+    Graph;
 
   typedef map<string, Traits::vertex_descriptor> node_map_t;
   node_map_t graphNodes;

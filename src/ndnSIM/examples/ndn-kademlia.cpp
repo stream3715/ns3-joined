@@ -74,10 +74,6 @@ main(int argc, char* argv[])
   CommandLine cmd;
   cmd.Parse(argc, argv);
 
-  AnnotatedTopologyReader topologyReader("", 25);
-  topologyReader.SetFileName("src/ndnSIM/examples/topologies/geant.txt");
-  ns3::NodeContainer nodes = topologyReader.Read();
-
   std::vector<std::string> array =
     {"be43a63a0fa44ec48dd74e52ed24aa6b", "6bc1933f452d4a3d80fca48b68dde16b",
      "d07b8294aeb744c183214868eea93b86", "76d4bf62b77e4eaba6ecc61549921415",
@@ -128,6 +124,10 @@ main(int argc, char* argv[])
     }
 
   */
+
+  AnnotatedTopologyReader topologyReader("", 25);
+  topologyReader.SetFileName("src/ndnSIM/examples/topologies/geant.txt");
+  ns3::NodeContainer nodes = topologyReader.Read(array);
 
   // Install NDN stack on all nodes
   ndn::StackHelper ndnHelper;

@@ -35,7 +35,6 @@ class Packet;
 class Address;
 class Time;
 
-
 /**
  * \ingroup network
  *
@@ -62,18 +61,24 @@ public:
    */
   static TypeId GetTypeId (void);
 
-  Node();
+  Node ();
   /**
    * \param systemId a unique integer used for parallel simulations.
    */
-  Node(uint32_t systemId);
+  Node (uint32_t systemId);
 
   /**
    * \param nodeId Node ID string used for KoNDN.
    */
   Node (std::string nodeId);
 
-  virtual ~Node();
+  /**
+   * \param systemId a unique integer used for parallel simulations.
+   * \param nodeId Node ID string used for KoNDN.
+   */
+  Node (uint32_t systemId, std::string nodeId);
+
+  virtual ~Node ();
 
   /**
    * \returns the unique id of this node.
@@ -165,8 +170,9 @@ public:
    *                   this value is only valid for promiscuous mode
    *                   protocol handlers.
    */
-  typedef Callback<void,Ptr<NetDevice>, Ptr<const Packet>,uint16_t,const Address &,
-                   const Address &, NetDevice::PacketType> ProtocolHandler;
+  typedef Callback<void, Ptr<NetDevice>, Ptr<const Packet>, uint16_t, const Address &,
+                   const Address &, NetDevice::PacketType>
+      ProtocolHandler;
   /**
    * \param handler the handler to register
    * \param protocolType the type of protocol this handler is
@@ -193,7 +199,7 @@ public:
   /**
    * A callback invoked whenever a device is added to a node.
    */
-  typedef Callback<void,Ptr<NetDevice> > DeviceAdditionListener;
+  typedef Callback<void, Ptr<NetDevice>> DeviceAdditionListener;
   /**
    * \param listener the listener to add
    *
@@ -210,13 +216,10 @@ public:
    */
   void UnregisterDeviceAdditionListener (DeviceAdditionListener listener);
 
-
-
   /**
    * \returns true if checksums are enabled, false otherwise.
    */
   static bool ChecksumEnabled (void);
-
 
 protected:
   /**
@@ -226,8 +229,8 @@ protected:
    */
   virtual void DoDispose (void);
   virtual void DoInitialize (void);
-private:
 
+private:
   /**
    * \brief Notifies all the DeviceAdditionListener about the new device added.
    * \param device the added device to notify.
@@ -242,7 +245,8 @@ private:
    * \param from the sender
    * \returns true if the packet has been delivered to a protocol handler.
    */
-  bool NonPromiscReceiveFromDevice (Ptr<NetDevice> device, Ptr<const Packet> packet, uint16_t protocol, const Address &from);
+  bool NonPromiscReceiveFromDevice (Ptr<NetDevice> device, Ptr<const Packet> packet,
+                                    uint16_t protocol, const Address &from);
   /**
    * \brief Receive a packet from a device in promiscuous mode.
    * \param device the device
@@ -254,7 +258,8 @@ private:
    * \returns true if the packet has been delivered to a protocol handler.
    */
   bool PromiscReceiveFromDevice (Ptr<NetDevice> device, Ptr<const Packet> packet, uint16_t protocol,
-                                 const Address &from, const Address &to, NetDevice::PacketType packetType);
+                                 const Address &from, const Address &to,
+                                 NetDevice::PacketType packetType);
   /**
    * \brief Receive a packet from a device.
    * \param device the device
@@ -267,7 +272,8 @@ private:
    * \returns true if the packet has been delivered to a protocol handler.
    */
   bool ReceiveFromDevice (Ptr<NetDevice> device, Ptr<const Packet>, uint16_t protocol,
-                          const Address &from, const Address &to, NetDevice::PacketType packetType, bool promisc);
+                          const Address &from, const Address &to, NetDevice::PacketType packetType,
+                          bool promisc);
 
   /**
    * \brief Finish node's construction by setting the correct node ID.
@@ -278,11 +284,12 @@ private:
    * \brief Protocol handler entry.
    * This structure is used to demultiplex all the protocols.
    */
-  struct ProtocolHandlerEntry {
+  struct ProtocolHandlerEntry
+  {
     ProtocolHandler handler; //!< the protocol handler
-    Ptr<NetDevice> device;   //!< the NetDevice
-    uint16_t protocol;       //!< the protocol number
-    bool promiscuous;        //!< true if it is a promiscuous handler
+    Ptr<NetDevice> device; //!< the NetDevice
+    uint16_t protocol; //!< the protocol number
+    bool promiscuous; //!< true if it is a promiscuous handler
   };
 
   /// Typedef for protocol handlers container
@@ -290,11 +297,11 @@ private:
   /// Typedef for NetDevice addition listeners container
   typedef std::vector<DeviceAdditionListener> DeviceAdditionListenerList;
 
-  uint32_t    m_id;         //!< Node id for this node
-  uint32_t    m_sid;        //!< System id for this node
+  uint32_t m_id; //!< Node id for this node
+  uint32_t m_sid; //!< System id for this node
   std::string m_nid; //!< KoNDN Node id for this node
-  std::vector<Ptr<NetDevice> > m_devices; //!< Devices associated to this node
-  std::vector<Ptr<Application> > m_applications; //!< Applications associated to this node
+  std::vector<Ptr<NetDevice>> m_devices; //!< Devices associated to this node
+  std::vector<Ptr<Application>> m_applications; //!< Applications associated to this node
   ProtocolHandlerList m_handlers; //!< Protocol handlers in the node
   DeviceAdditionListenerList m_deviceAdditionListeners; //!< Device addition listeners in the node
 };

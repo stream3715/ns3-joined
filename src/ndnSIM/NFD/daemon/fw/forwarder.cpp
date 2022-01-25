@@ -306,6 +306,9 @@ Forwarder::onIncomingData(const FaceEndpoint& ingress, const Data& data)
     // (drop)
     return;
   }
+  else {
+    std::cout << "DRECV " << ingress << " " << data.getName() << std::endl;
+  }
 
   // PIT match
   pit::DataMatchResult pitMatches = m_pit.findAllDataMatches(data);

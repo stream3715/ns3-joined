@@ -22,10 +22,10 @@
 #ifndef __ANNOTATED_TOPOLOGY_READER_H__
 #define __ANNOTATED_TOPOLOGY_READER_H__
 
-#include "ns3/topology-reader.h"
-#include "ns3/random-variable-stream.h"
-#include "ns3/object-factory.h"
 #include "ns3/node-container.h"
+#include "ns3/object-factory.h"
+#include "ns3/random-variable-stream.h"
+#include "ns3/topology-reader.h"
 
 namespace ns3 {
 
@@ -51,23 +51,30 @@ public:
    * \brief Main annotated topology reading function.
    *
    * This method opens an input stream and reads topology file with annotations.
+   *F
+   * \return the container of the nodes created (or empty container if there was an error)
+   */
+  virtual NodeContainer Read();
+
+  /**
+   * \brief Main annotated topology reading function.
+   *
+   * This method opens an input stream and reads topology file with annotations.
+   * \param array std::vector<std::string> Node ID vector
    *
    * \return the container of the nodes created (or empty container if there was an error)
    */
-  virtual NodeContainer
-  Read();
+  virtual NodeContainer Read(std::vector<std::string> array);
 
   /**
    * \brief Get nodes read by the reader
    */
-  virtual NodeContainer
-  GetNodes() const;
+  virtual NodeContainer GetNodes() const;
 
   /**
    * \brief Get links read by the reader
    */
-  virtual const std::list<Link>&
-  GetLinks() const;
+  virtual const std::list<Link>& GetLinks() const;
 
   /**
    * \brief Assign IPv4 addresses to all links
@@ -78,8 +85,7 @@ public:
    *
    * \param base Starting IPv4 address (second link will have base+256)
    */
-  virtual void
-  AssignIpv4Addresses(Ipv4Address base);
+  virtual void AssignIpv4Addresses(Ipv4Address base);
 
   /**
    * \brief Set bounding box where nodes will be randomly places (if positions are unspecified)
@@ -88,40 +94,38 @@ public:
    * \param lrx Lower right x coordinate
    * \param lry Lower right y coordinate
    */
-  virtual void
-  SetBoundingBox(double ulx, double uly, double lrx, double lry);
+  virtual void SetBoundingBox(double ulx, double uly, double lrx, double lry);
 
   /**
    * \brief Set mobility model to be used on nodes
    * \param model class name of the model
    */
-  virtual void
-  SetMobilityModel(const std::string& model);
+  virtual void SetMobilityModel(const std::string& model);
 
   /**
    * \brief Apply OSPF metric on Ipv4 (if exists) and Ccnx (if exists) stacks
    */
-  virtual void
-  ApplyOspfMetric();
+  virtual void ApplyOspfMetric();
 
   /**
    * \brief Save positions (e.g., after manual modification using visualizer)
    */
-  virtual void
-  SaveTopology(const std::string& file);
+  virtual void SaveTopology(const std::string& file);
 
   /**
    * \brief Save topology in graphviz format (.dot file)
    */
-  virtual void
-  SaveGraphviz(const std::string& file);
+  virtual void SaveGraphviz(const std::string& file);
 
 protected:
-  Ptr<Node>
-  CreateNode(const std::string name, uint32_t systemId);
+  Ptr<Node> CreateNode(const std::string name, uint32_t systemId);
 
-  Ptr<Node>
-  CreateNode(const std::string name, double posX, double posY, uint32_t systemId);
+  Ptr<Node> CreateNode(const std::string name, uint32_t systemId, std::string nodeId);
+
+  Ptr<Node> CreateNode(const std::string name, double posX, double posY, uint32_t systemId);
+
+  Ptr<Node> CreateNode(const std::string name, double posX, double posY, uint32_t systemId,
+                       std::string nodeId);
 
 protected:
   /**
@@ -129,8 +133,7 @@ protected:
    * NetDeviceContainer must be allocated
    * NodeContainer from Read method
    */
-  void
-  ApplySettings();
+  void ApplySettings();
 
 protected:
   std::string m_path;
@@ -138,8 +141,7 @@ protected:
 
 private:
   AnnotatedTopologyReader(const AnnotatedTopologyReader&);
-  AnnotatedTopologyReader&
-  operator=(const AnnotatedTopologyReader&);
+  AnnotatedTopologyReader& operator=(const AnnotatedTopologyReader&);
 
   Ptr<UniformRandomVariable> m_randX;
   Ptr<UniformRandomVariable> m_randY;

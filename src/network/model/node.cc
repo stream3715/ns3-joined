@@ -89,6 +89,12 @@ Node::Node (std::string nid) : m_id (0), m_sid (0), m_nid (nid)
   Construct ();
 }
 
+Node::Node (uint32_t sid, std::string nid) : m_id (0), m_sid (sid), m_nid (nid)
+{
+  NS_LOG_FUNCTION (this << nid);
+  Construct ();
+}
+
 void
 Node::Construct (void)
 {
