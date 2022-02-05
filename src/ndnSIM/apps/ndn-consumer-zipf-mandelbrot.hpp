@@ -67,6 +67,12 @@ public:
   uint32_t
   GetNextSeq();
 
+private:
+  typedef boost::array<boost::uint8_t, 20> hash_data_t;
+
+  static string calcSha1Hash(Name name);
+  static hash_data_t get_sha1_hash(const void* data, const std::size_t byte_count);
+
 protected:
   virtual void
   ScheduleNextPacket();

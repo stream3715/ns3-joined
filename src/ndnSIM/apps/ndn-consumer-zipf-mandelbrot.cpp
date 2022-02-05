@@ -28,6 +28,8 @@ NS_LOG_COMPONENT_DEFINE("ndn.ConsumerZipfMandelbrot");
 namespace ns3 {
 namespace ndn {
 
+typedef boost::array<boost::uint8_t, 20> hash_data_t;
+
 NS_OBJECT_ENSURE_REGISTERED(ConsumerZipfMandelbrot);
 
 TypeId
@@ -122,6 +124,41 @@ ConsumerZipfMandelbrot::GetS() const
   return m_s;
 }
 
+hash_data_t
+ConsumerZipfMandelbrot::get_sha1_hash(const void* data, const std::size_t byte_count)
+{
+  boost::uuids::detail::sha1 sha1;
+  sha1.process_bytes(data, byte_count);
+  unsigned int digest[5];
+  sha1.get_digest(digest);
+  const boost::uint8_t* p_digest = reinterpret_cast<const boost::uint8_t*>(digest);
+  hash_data_t hash_data;
+  for (int i = 0; i < 5; ++i) {
+    hash_data[i * 4] = p_digest[i * 4 + 3];
+    hash_data[i * 4 + 1] = p_digest[i * 4 + 2];
+    hash_data[i * 4 + 2] = p_digest[i * 4 + 1];
+    hash_data[i * 4 + 3] = p_digest[i * 4];
+  }
+  return hash_data;
+}
+
+string
+ConsumerZipfMandelbrot::calcSha1Hash(Name name)
+{
+  string nameStr = name.toUri();
+  string prefix = "/nakazato.lab";
+  cout << "I_NDN_CONS_ZIPF " << nameStr << endl;
+  hash_data_t hash = get_sha1_hash(nameStr.c_str(), nameStr.size());
+  hash_data_t::const_iterator itr = hash.begin();
+  const hash_data_t::const_iterator end_itr = hash.end();
+  stringstream ss;
+  for (; itr != end_itr; ++itr) {
+    ss << std::hex << ((*itr & 0xf0) >> 4) << (*itr & 0x0f);
+  }
+  string hashStr = ss.str();
+  return hashStr;
+}
+
 void
 ConsumerZipfMandelbrot::SendPacket()
 {
@@ -170,9 +207,13 @@ ConsumerZipfMandelbrot::SendPacket()
   nameWithSequence->appendSequenceNumber(seq);
   //
 
+  std::string contentHash = calcSha1Hash(*nameWithSequence);
+  shared_ptr<Name> hashed = make_shared<Name>(Name(contentHash));
+
   shared_ptr<Interest> interest = make_shared<Interest>();
   interest->setNonce(m_rand->GetValue(0, std::numeric_limits<uint32_t>::max()));
   interest->setName(*nameWithSequence);
+  interest->setHashedName(*hashed);
 
   // NS_LOG_INFO ("Requesting Interest: \n" << *interest);
   NS_LOG_INFO("> Interest for " << seq << ", Total: " << m_seq << ", face: " << m_face->getId());

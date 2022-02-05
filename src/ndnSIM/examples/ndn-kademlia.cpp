@@ -146,7 +146,7 @@ main(int argc, char* argv[])
   // Installing applications
 
   // Producer
-  Ptr<Node> producerMain = Names::Find<Node>("rtr-2");
+  Ptr<Node> producerMain = Names::Find<Node>("leaf-2");
 
   ndn::AppHelper producerHelper("ns3::ndn::Producer");
   producerHelper.SetAttribute("PayloadSize", StringValue("1024"));
@@ -156,7 +156,7 @@ main(int argc, char* argv[])
   ndnGlobalRoutingHelper.AddOrigins(prefix, producerMain);
 
   NodeContainer mainConsumerNodes;
-  mainConsumerNodes.Add(Names::Find<Node>("rtr-3"));
+  mainConsumerNodes.Add(Names::Find<Node>("leaf-3"));
 
   /*
     NodeContainer subConsumerNodes;
@@ -222,7 +222,7 @@ main(int argc, char* argv[])
   // Calculate and install FIBs
   GlobalRoutingHelper::CalculateRoutes();
 
-  Simulator::Stop(Seconds(10.0));
+  Simulator::Stop(Seconds(1.0));
 
   ndn::L3RateTracer::InstallAll("rate-trace.tsv", Seconds(0.5));
   L2RateTracer::InstallAll("drop-trace.tsv", Seconds(0.5));

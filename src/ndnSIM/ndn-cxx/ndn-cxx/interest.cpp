@@ -35,9 +35,11 @@
 #include <boost/stacktrace/stacktrace.hpp>
 #endif
 
+#include <cstdio>
 #include <cstring>
 #include <iostream>
 #include <sstream>
+#include <string>
 
 namespace ndn {
 

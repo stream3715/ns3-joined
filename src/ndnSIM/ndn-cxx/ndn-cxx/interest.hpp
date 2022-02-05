@@ -25,12 +25,15 @@
 #ifndef NDN_INTEREST_HPP
 #define NDN_INTEREST_HPP
 
+#include <boost/lexical_cast.hpp>
 #include <boost/logic/tribool.hpp>
+#include <boost/uuid/detail/sha1.hpp>
 
 #include "ndn-cxx/delegation-list.hpp"
 #include "ndn-cxx/detail/packet-base.hpp"
 #include "ndn-cxx/name.hpp"
 #include "ndn-cxx/util/time.hpp"
+using namespace std;
 
 namespace ndn {
 
@@ -374,9 +377,9 @@ public: // element access
   }
 
   Interest&
-  setHashedName(const Name& hashedName)
+  setHashedName(const Name& name)
   {
-    m_hashedname = hashedName;
+    m_hashedname = name;
     m_wire.reset();
     return *this;
   }
@@ -428,9 +431,9 @@ private:
   static ssize_t findParametersDigestComponent(const Name& name);
 
 #ifdef NDN_CXX_HAVE_TESTS
-public:
-  /// If true, not setting CanBePrefix results in an error in wireEncode().
-  static bool s_errorIfCanBePrefixUnset;
+    public :
+    /// If true, not setting CanBePrefix results in an error in wireEncode().
+    static bool s_errorIfCanBePrefixUnset;
 #endif // NDN_CXX_HAVE_TESTS
 
 private:
@@ -457,10 +460,10 @@ private:
 
   mutable Block m_wire;
 
-  mutable Name m_destid;      // 当座の行き先
-  mutable Name m_agentid;     // NDN探索時のAgent Node保持用
-  mutable Name m_hashedname;  // Kademlia時のContent Name保持用
-  mutable Name m_protocol;    // Protocol保持用
+  mutable Name m_destid;     // 当座の行き先
+  mutable Name m_agentid;    // NDN探索時のAgent Node保持用
+  mutable Name m_hashedname; // Kademlia時のContent Name保持用
+  mutable Name m_protocol;   // Protocol保持用
 };
 
 NDN_CXX_DECLARE_WIRE_ENCODE_INSTANTIATIONS(Interest);

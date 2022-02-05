@@ -21,7 +21,7 @@
 
 #include "ndn-consumer.hpp"
 
-#include <clx/sha1.h>
+#include <boost/uuid/sha1.hpp>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/ref.hpp>
@@ -41,10 +41,11 @@
 #include "utils/ndn-rtt-mean-deviation.hpp"
 
 NS_LOG_COMPONENT_DEFINE("ndn.Consumer");
-clx::sha1 hash;
 
 namespace ns3 {
 namespace ndn {
+
+typedef boost::array<boost::uint8_t, 20> hash_data_t;
 
 NS_OBJECT_ENSURE_REGISTERED(Consumer);
 
@@ -160,6 +161,41 @@ Consumer::StopApplication() // Called at time specified by Stop
   App::StopApplication();
 }
 
+hash_data_t
+Consumer::get_sha1_hash(const void* data, const std::size_t byte_count)
+{
+  boost::uuids::detail::sha1 sha1;
+  sha1.process_bytes(data, byte_count);
+  unsigned int digest[5];
+  sha1.get_digest(digest);
+  const boost::uint8_t* p_digest = reinterpret_cast<const boost::uint8_t*>(digest);
+  hash_data_t hash_data;
+  for (int i = 0; i < 5; ++i) {
+    hash_data[i * 4] = p_digest[i * 4 + 3];
+    hash_data[i * 4 + 1] = p_digest[i * 4 + 2];
+    hash_data[i * 4 + 2] = p_digest[i * 4 + 1];
+    hash_data[i * 4 + 3] = p_digest[i * 4];
+  }
+  return hash_data;
+}
+
+string
+Consumer::calcSha1Hash(Name name)
+{
+  string nameStr = name.toUri();
+  string prefix = "/nakazato.lab";
+  cout << "I_NDN_CONS " << nameStr << endl;
+  hash_data_t hash = get_sha1_hash(nameStr.c_str(), nameStr.size());
+  hash_data_t::const_iterator itr = hash.begin();
+  const hash_data_t::const_iterator end_itr = hash.end();
+  stringstream ss;
+  for (; itr != end_itr; ++itr) {
+    ss << std::hex << ((*itr & 0xf0) >> 4) << (*itr & 0x0f);
+  }
+  string hashStr = ss.str();
+  return hashStr;
+}
+
 void
 Consumer::SendPacket()
 {
@@ -190,8 +226,7 @@ Consumer::SendPacket()
   shared_ptr<Name> nameWithSequence = make_shared<Name>(m_interestName);
   nameWithSequence->appendSequenceNumber(seq);
 
-  std::string contentHash =
-    hash.encode(boost::lexical_cast<std::string>((m_interestName).toUri().substr(1))).to_string();
+  std::string contentHash = calcSha1Hash(m_interestName);
 
   shared_ptr<Name> hashed = make_shared<Name>(Name(contentHash));
   //
