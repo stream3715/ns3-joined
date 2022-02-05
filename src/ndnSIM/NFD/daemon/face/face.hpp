@@ -49,32 +49,26 @@ typedef TransportState FaceState;
  *  LinkService is the upper part, which translates between network-layer packets
  *  and TLV blocks, and may provide additional services such as fragmentation and reassembly.
  */
-class Face FINAL_UNLESS_WITH_TESTS : public std::enable_shared_from_this<Face>, noncopyable
-{
+class Face FINAL_UNLESS_WITH_TESTS : public std::enable_shared_from_this<Face>, noncopyable {
 public:
   Face(unique_ptr<LinkService> service, unique_ptr<Transport> transport);
 
-  LinkService*
-  getLinkService() const;
+  LinkService* getLinkService() const;
 
-  Transport*
-  getTransport() const;
+  Transport* getTransport() const;
 
 public: // upper interface connected to forwarding
   /** \brief send Interest to \p endpointId
    */
-  void
-  sendInterest(const Interest& interest, const EndpointId& endpointId);
+  void sendInterest(const Interest& interest, const EndpointId& endpointId);
 
   /** \brief send Data to \p endpointId
    */
-  void
-  sendData(const Data& data, const EndpointId& endpointId);
+  void sendData(const Data& data, const EndpointId& endpointId);
 
   /** \brief send Nack to \p endpointId
    */
-  void
-  sendNack(const lp::Nack& nack, const EndpointId& endpointId);
+  void sendNack(const lp::Nack& nack, const EndpointId& endpointId);
 
   /** \brief signals on Interest received
    */
@@ -95,66 +89,54 @@ public: // upper interface connected to forwarding
 public: // static properties
   /** \return face ID
    */
-  FaceId
-  getId() const;
+  FaceId getId() const;
 
   /** \brief sets face ID
    *  \note Normally, this should only be invoked by FaceTable.
    */
-  void
-  setId(FaceId id);
+  void setId(FaceId id);
 
-  void
-  setMetric(uint64_t metric);
+  void setMetric(uint64_t metric);
 
-  uint64_t
-  getMetric() const;
+  uint64_t getMetric() const;
 
   /** \return a FaceUri representing local endpoint
    */
-  FaceUri
-  getLocalUri() const;
+  FaceUri getLocalUri() const;
 
   /** \return a FaceUri representing remote endpoint
    */
-  FaceUri
-  getRemoteUri() const;
+  FaceUri getRemoteUri() const;
 
   /** \return whether face is local or non-local for scope control purpose
    */
-  ndn::nfd::FaceScope
-  getScope() const;
+  ndn::nfd::FaceScope getScope() const;
 
   /** \return face persistency setting
    */
-  ndn::nfd::FacePersistency
-  getPersistency() const;
+  ndn::nfd::FacePersistency getPersistency() const;
 
   /** \brief changes face persistency setting
    */
-  void
-  setPersistency(ndn::nfd::FacePersistency persistency);
+  void setPersistency(ndn::nfd::FacePersistency persistency);
 
   /** \return whether face is point-to-point or multi-access
    */
-  ndn::nfd::LinkType
-  getLinkType() const;
+  ndn::nfd::LinkType getLinkType() const;
 
 public: // dynamic properties
   /** \return face state
    */
-  FaceState
-  getState() const;
+  FaceState getState() const;
 
   /** \brief signals after face state changed
    */
-  signal::Signal<Transport, FaceState/*old*/, FaceState/*new*/>& afterStateChange;
+  signal::Signal<Transport, FaceState /*old*/, FaceState /*new*/>& afterStateChange;
 
   /** \return expiration time of the face
    *  \retval time::steady_clock::TimePoint::max() the face has an indefinite lifetime
    */
-  time::steady_clock::TimePoint
-  getExpirationTime() const;
+  time::steady_clock::TimePoint getExpirationTime() const;
 
   /** \brief request the face to be closed
    *
@@ -166,11 +148,9 @@ public: // dynamic properties
    *
    *  \warning the face must not be deallocated until its state changes to CLOSED
    */
-  void
-  close();
+  void close();
 
-  const FaceCounters&
-  getCounters() const;
+  const FaceCounters& getCounters() const;
 
 private:
   FaceId m_id;
@@ -294,8 +274,7 @@ Face::getCounters() const
   return m_counters;
 }
 
-std::ostream&
-operator<<(std::ostream& os, const FaceLogHelper<Face>& flh);
+std::ostream& operator<<(std::ostream& os, const FaceLogHelper<Face>& flh);
 
 } // namespace face
 

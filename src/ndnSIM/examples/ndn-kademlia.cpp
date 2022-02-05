@@ -113,6 +113,7 @@ main(int argc, char* argv[])
      "546bfdc9efc84e319416a20e55cb3539", "2b95e1568dd14fa89f94733a168d715b",
      "17b9ba49c7a648d0a2b23bc2ebdb02e4", "fa880995a1854686b0ae54c712b3a83e"};
 
+  int len = array.size();
   /**
   uint32_t nodeCount = 3;
   clx::sha1 hash;

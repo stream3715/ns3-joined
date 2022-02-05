@@ -28,7 +28,7 @@
                 "pipeArgs": [
                     "--command-template",
                     "\"", // opening quote for command template
-                    "/usr/local/bin/gdb",
+                    "/usr/bin/gdb",
                     "--interpreter=mi", // --interpreter lets vscode talk to gdb
                     "--args",
                     "%s",
@@ -75,7 +75,7 @@
                 },
                 {
                     "Name": "NS3_MODULE_PATH",
-                    "Value": "/usr/lib/gcc/x86_64-linux-gnu/7:/home/strea/ndnSIM/ns-3/build/lib"
+                    "Value": "/usr/lib/gcc/x86_64-linux-gnu/9:/home/strea/ndnSIM/ns-3/build/lib"
                 },
                 {
                     "Name": "NS3_EXECUTABLE_PATH",
@@ -83,12 +83,12 @@
                 },
                 {
                     "Name": "PATH",
-                    "Value": "/home/strea/.goenv/versions/1.17.2/bin:/home/strea/.goenv/bin:/home/strea/ndnSIM/ns-3/build/src/fd-net-device:/home/strea/ndnSIM/ns-3/build/src/tap-bridge:/home/strea/.cache/cloud-code/installer/google-cloud-sdk/bin:/home/strea/.vscode-server/bin/3a6960b964327f0e3882ce18fcebd07ed191b316/bin:/home/strea/.goenv/versions/1.17.2/bin:/home/strea/.goenv/shims:/home/strea/.goenv/bin:/home/strea/.nvm/versions/node/v12.22.6/bin:/home/strea/.vscode-server/bin/3a6960b964327f0e3882ce18fcebd07ed191b316/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/opt/mssql-tools/bin:/home/strea/go/1.17.2/bin:/opt/mssql-tools/bin:/home/strea/go/1.17.2/bin"
+                    "Value": "/home/strea/ndnSIM/ns-3/build/src/fd-net-device:/home/strea/ndnSIM/ns-3/build/src/tap-bridge:/home/strea/.vscode-server/bin/899d46d82c4c95423fb7e10e68eba52050e30ba3/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/usr/lib/wsl/lib:/mnt/c/Program Files/Microsoft/jdk-11.0.13.8-hotspot/bin:/mnt/c/Program Files/Eclipse Foundation/jdk-8.0.302.8-hotspot/bin:/mnt/c/PROGRA~2/COMMON~1/Intel/SHARED~1/redist/intel64/compiler:/mnt/c/Program Files/Python310/Scripts/:/mnt/c/Program Files/Python310/:/mnt/c/Windows/system32:/mnt/c/Windows:/mnt/c/Windows/System32/Wbem:/mnt/c/Windows/System32/WindowsPowerShell/v1.0/:/mnt/c/Windows/System32/OpenSSH/:/mnt/c/Program Files (x86)/NVIDIA Corporation/PhysX/Common:/mnt/c/Program Files/NVIDIA Corporation/NVIDIA NvDLISR:/mnt/c/Program Files/Microsoft VS Code/bin:/mnt/c/Program Files/Git/cmd:/mnt/c/Program Files/PowerShell/7/:/mnt/c/Program Files/dotnet/:/mnt/c/Program Files/Microsoft SQL Server/150/Tools/Binn/:/mnt/c/Program Files/Microsoft SQL Server/130/Tools/Binn/:/mnt/c/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit/:/mnt/c/Program Files (x86)/GNU Arm Embedded Toolchain/10 2021.10/bin:/mnt/c/Program Files/CMake/bin:/mnt/c/Program Files/Amazon/AWSCLIV2/:/mnt/c/Program Files/Go/bin:/mnt/c/Program Files/Docker/Docker/resources/bin:/mnt/c/ProgramData/DockerDesktop/version-bin:/mnt/c/Users/strea/AppData/Local/Microsoft/WindowsApps:/mnt/c/Users/strea/AppData/Local/Box/Box Edit/:/mnt/c/Users/strea/.dotnet/tools:/mnt/c/Users/strea/go/bin:/snap/bin"
                 }
             ],
             "externalConsole": false,
             "MIMode": "gdb",
-            "miDebuggerPath": "/usr/local/bin/gdb",
+            "miDebuggerPath": "/usr/bin/gdb",
             "setupCommands": [
                 {
                     "description": "Enable pretty-printing for gdb",
