@@ -67,15 +67,16 @@ main(int argc, char* argv[])
   Config::SetDefault("ns3::PointToPointChannel::Delay", StringValue("10ms"));
   Config::SetDefault("ns3::QueueBase::MaxSize", StringValue("20p"));
 
-  std::string prefix = "/nakazato.lab/test";
+  string prefix = "/nakazato.lab/test";
 
   // Read optional command-line parameters (e.g., enable visualizer with ./waf
   // --run=<> --visualize
   CommandLine cmd;
   cmd.Parse(argc, argv);
 
-  std::vector<std::string> array =
+  vector<string> array =
     {"be43a63a0fa44ec48dd74e52ed24aa6b", "6bc1933f452d4a3d80fca48b68dde16b",
+     /*
      "d07b8294aeb744c183214868eea93b86", "76d4bf62b77e4eaba6ecc61549921415",
      "a6cbb31c62eb49d2bd7fcafbb2352ba2", "9d5500bc83744a14a6cefd539a626825",
      "2c52fefc6b514356a939ea011ecf729e", "042d4ec998c64ddb9ab5c79aded054b8",
@@ -111,23 +112,24 @@ main(int argc, char* argv[])
      "13974e3ff208433a8c82c40a906e98c6", "3f3a2e177c834dd383dca7afd74020d7",
      "6620b642857e48ab8f20c622ddceee79", "ad527423d3a54072abae030f2387308f",
      "546bfdc9efc84e319416a20e55cb3539", "2b95e1568dd14fa89f94733a168d715b",
+     */
      "17b9ba49c7a648d0a2b23bc2ebdb02e4", "fa880995a1854686b0ae54c712b3a83e"};
 
-  int len = array.size();
+  cout << "Array size: " << array.size() << endl;
   /**
   uint32_t nodeCount = 3;
   clx::sha1 hash;
   for (uint32_t i = 0; i < nodeCount; i++)
     {
       const uuid id = random_generator () ();
-      std::string contentHash = hash.encode (boost::lexical_cast<std::string> (id)).to_string ();
-      array.push_back (contentHash);
+      string contentHash = hash.encode (boost::lexical_cast<string>
+  (id)).to_string (); array.push_back (contentHash);
     }
 
   */
 
   AnnotatedTopologyReader topologyReader("", 25);
-  topologyReader.SetFileName("src/ndnSIM/examples/topologies/geant.txt");
+  topologyReader.SetFileName("src/ndnSIM/examples/topologies/geant_mini.txt");
   ns3::NodeContainer nodes = topologyReader.Read(array);
 
   // Install NDN stack on all nodes
@@ -145,7 +147,7 @@ main(int argc, char* argv[])
   // Installing applications
 
   // Producer
-  Ptr<Node> producerMain = Names::Find<Node>("rtr-35");
+  Ptr<Node> producerMain = Names::Find<Node>("rtr-2");
 
   ndn::AppHelper producerHelper("ns3::ndn::Producer");
   producerHelper.SetAttribute("PayloadSize", StringValue("1024"));
@@ -155,62 +157,66 @@ main(int argc, char* argv[])
   ndnGlobalRoutingHelper.AddOrigins(prefix, producerMain);
 
   NodeContainer mainConsumerNodes;
-  mainConsumerNodes.Add(Names::Find<Node>("rtr-17"));
+  mainConsumerNodes.Add(Names::Find<Node>("rtr-3"));
 
-  NodeContainer subConsumerNodes;
+  /*
+    NodeContainer subConsumerNodes;
 
-  subConsumerNodes.Add(Names::Find<Node>("rtr-1"));
-  subConsumerNodes.Add(Names::Find<Node>("rtr-2"));
-  subConsumerNodes.Add(Names::Find<Node>("rtr-3"));
-  subConsumerNodes.Add(Names::Find<Node>("rtr-4"));
-  subConsumerNodes.Add(Names::Find<Node>("rtr-5"));
-  subConsumerNodes.Add(Names::Find<Node>("rtr-6"));
-  subConsumerNodes.Add(Names::Find<Node>("rtr-7"));
-  subConsumerNodes.Add(Names::Find<Node>("rtr-8"));
-  subConsumerNodes.Add(Names::Find<Node>("rtr-9"));
-  subConsumerNodes.Add(Names::Find<Node>("rtr-10"));
-  subConsumerNodes.Add(Names::Find<Node>("rtr-11"));
-  subConsumerNodes.Add(Names::Find<Node>("rtr-12"));
-  subConsumerNodes.Add(Names::Find<Node>("rtr-13"));
-  subConsumerNodes.Add(Names::Find<Node>("rtr-14"));
-  subConsumerNodes.Add(Names::Find<Node>("rtr-15"));
-  subConsumerNodes.Add(Names::Find<Node>("rtr-16"));
-  // subConsumerNodes.Add(Names::Find<Node>("rtr-17"));
-  subConsumerNodes.Add(Names::Find<Node>("rtr-18"));
-  subConsumerNodes.Add(Names::Find<Node>("rtr-19"));
-  subConsumerNodes.Add(Names::Find<Node>("rtr-20"));
-  subConsumerNodes.Add(Names::Find<Node>("rtr-21"));
-  subConsumerNodes.Add(Names::Find<Node>("rtr-22"));
-  subConsumerNodes.Add(Names::Find<Node>("rtr-23"));
-  subConsumerNodes.Add(Names::Find<Node>("rtr-24"));
-  subConsumerNodes.Add(Names::Find<Node>("rtr-25"));
-  subConsumerNodes.Add(Names::Find<Node>("rtr-26"));
-  subConsumerNodes.Add(Names::Find<Node>("rtr-27"));
-  subConsumerNodes.Add(Names::Find<Node>("rtr-28"));
-  subConsumerNodes.Add(Names::Find<Node>("rtr-29"));
-  subConsumerNodes.Add(Names::Find<Node>("rtr-30"));
-  subConsumerNodes.Add(Names::Find<Node>("rtr-31"));
-  subConsumerNodes.Add(Names::Find<Node>("rtr-32"));
-  subConsumerNodes.Add(Names::Find<Node>("rtr-33"));
-  subConsumerNodes.Add(Names::Find<Node>("rtr-34"));
-  // subConsumerNodes.Add(Names::Find<Node>("rtr-35"));
-  subConsumerNodes.Add(Names::Find<Node>("rtr-36"));
-  subConsumerNodes.Add(Names::Find<Node>("rtr-37"));
+    subConsumerNodes.Add(Names::Find<Node>("rtr-1"));
+    subConsumerNodes.Add(Names::Find<Node>("rtr-2"));
+    subConsumerNodes.Add(Names::Find<Node>("rtr-3"));
+    subConsumerNodes.Add(Names::Find<Node>("rtr-4"));
+    subConsumerNodes.Add(Names::Find<Node>("rtr-5"));
+    subConsumerNodes.Add(Names::Find<Node>("rtr-6"));
+    subConsumerNodes.Add(Names::Find<Node>("rtr-7"));
+    subConsumerNodes.Add(Names::Find<Node>("rtr-8"));
+    subConsumerNodes.Add(Names::Find<Node>("rtr-9"));
+    subConsumerNodes.Add(Names::Find<Node>("rtr-10"));
+    subConsumerNodes.Add(Names::Find<Node>("rtr-11"));
+    subConsumerNodes.Add(Names::Find<Node>("rtr-12"));
+    subConsumerNodes.Add(Names::Find<Node>("rtr-13"));
+    subConsumerNodes.Add(Names::Find<Node>("rtr-14"));
+    subConsumerNodes.Add(Names::Find<Node>("rtr-15"));
+    subConsumerNodes.Add(Names::Find<Node>("rtr-16"));
+    // subConsumerNodes.Add(Names::Find<Node>("rtr-17"));
+    subConsumerNodes.Add(Names::Find<Node>("rtr-18"));
+    subConsumerNodes.Add(Names::Find<Node>("rtr-19"));
+    subConsumerNodes.Add(Names::Find<Node>("rtr-20"));
+    subConsumerNodes.Add(Names::Find<Node>("rtr-21"));
+    subConsumerNodes.Add(Names::Find<Node>("rtr-22"));
+    subConsumerNodes.Add(Names::Find<Node>("rtr-23"));
+    subConsumerNodes.Add(Names::Find<Node>("rtr-24"));
+    subConsumerNodes.Add(Names::Find<Node>("rtr-25"));
+    subConsumerNodes.Add(Names::Find<Node>("rtr-26"));
+    subConsumerNodes.Add(Names::Find<Node>("rtr-27"));
+    subConsumerNodes.Add(Names::Find<Node>("rtr-28"));
+    subConsumerNodes.Add(Names::Find<Node>("rtr-29"));
+    subConsumerNodes.Add(Names::Find<Node>("rtr-30"));
+    subConsumerNodes.Add(Names::Find<Node>("rtr-31"));
+    subConsumerNodes.Add(Names::Find<Node>("rtr-32"));
+    subConsumerNodes.Add(Names::Find<Node>("rtr-33"));
+    subConsumerNodes.Add(Names::Find<Node>("rtr-34"));
+    // subConsumerNodes.Add(Names::Find<Node>("rtr-35"));
+    subConsumerNodes.Add(Names::Find<Node>("rtr-36"));
+    subConsumerNodes.Add(Names::Find<Node>("rtr-37"));
+    */
 
   ndn::AppHelper consumerHelper("ns3::ndn::ConsumerZipfMandelbrot");
   consumerHelper.SetPrefix(prefix);
   consumerHelper.SetAttribute("Frequency", StringValue("100")); // 100 interests a second
   consumerHelper.Install(mainConsumerNodes);
 
-  ndn::AppHelper subConsumerHelper("ns3::ndn::ConsumerZipfMandelbrot");
-  subConsumerHelper.SetPrefix(prefix);
-  subConsumerHelper.SetAttribute("Frequency", StringValue("100"));
-  subConsumerHelper.Install(subConsumerNodes);
+  /*
+    ndn::AppHelper subConsumerHelper("ns3::ndn::ConsumerZipfMandelbrot");
+    subConsumerHelper.SetPrefix(prefix);
+    subConsumerHelper.SetAttribute("Frequency", StringValue("100"));
+    subConsumerHelper.Install(subConsumerNodes);
+  */
 
   // Add Kademlia Based Routes to Node
   for (const auto& e : array | boost::adaptors::indexed()) {
     auto index = e.index();
-    std::string value = e.value();
+    string value = e.value();
     ndnGlobalRoutingHelper.AddOrigins("/" + value, nodes.Get(index));
   }
 
