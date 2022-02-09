@@ -217,7 +217,7 @@ main(int argc, char* argv[])
   // Calculate and install FIBs
   GlobalRoutingHelper::CalculateRoutes();
 
-  Simulator::Stop(Seconds(1.0));
+  Simulator::Stop(Seconds(10.0));
 
   ndn::L3RateTracer::InstallAll("rate-trace.tsv", Seconds(0.5));
   L2RateTracer::InstallAll("drop-trace.tsv", Seconds(0.5));

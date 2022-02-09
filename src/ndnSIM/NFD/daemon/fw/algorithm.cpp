@@ -213,8 +213,8 @@ isNextHopEligible(const Face& inFace, const Interest& interest, const fib::NextH
 {
   const Face& outFace = nexthop.getFace();
 
-  std::cout << "outface " << outFace.getId() << " inface " << inFace.getId() << "\n agent "
-            << interest.getAgentNodeID().toUri() << " node " << nodeId.toUri() << "\n";
+  // std::cout << "outface " << outFace.getId() << " inface " << inFace.getId() << "\n agent "
+  //          << interest.getAgentNodeID().toUri() << " node " << nodeId.toUri() << "\n";
 
   // do not forward back to the same face, unless it is ad hoc
   if ((outFace.getId() == inFace.getId() && outFace.getLinkType() != ndn::nfd::LINK_TYPE_AD_HOC

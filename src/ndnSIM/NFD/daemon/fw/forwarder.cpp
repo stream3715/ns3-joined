@@ -267,7 +267,8 @@ Forwarder::onOutgoingInterest(const shared_ptr<pit::Entry>& pitEntry, const Face
   std::string prefix = "/localhost";
   std::string name = interest.getName().toUri();
   if (std::mismatch(prefix.begin(), prefix.end(), name.begin(), name.end()).first != prefix.end()) {
-    std::cout << m_nodeId.toUri() << " " << interest.getName().toUri() << std::endl;
+    std::cout << "OI " << "CURR_NODE: " << m_nodeId.toUri() << " INAME: " << interest.getName().toUri()
+              << std::endl;
   }
 
   // send Interest
@@ -319,7 +320,7 @@ Forwarder::onIncomingData(const FaceEndpoint& ingress, const Data& data)
     return;
   }
   else if (!scope_prefix::LOCALHOST.isPrefixOf(data.getName())) {
-    std::cout << "DRECV " << ingress << " " << data.getName() << std::endl;
+    std::cout << "ID INGRESS: " << ingress << " DNAME: " << data.getName() << std::endl;
   }
 
   // PIT match

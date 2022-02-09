@@ -147,7 +147,7 @@ ConsumerZipfMandelbrot::calcSha1Hash(Name name)
 {
   string nameStr = name.toUri();
   string prefix = "/nakazato.lab";
-  cout << "I_NDN_CONS_ZIPF " << nameStr << endl;
+  // cout << "I_NDN_CONS_ZIPF " << nameStr << endl;
   hash_data_t hash = get_sha1_hash(nameStr.c_str(), nameStr.size());
   hash_data_t::const_iterator itr = hash.begin();
   const hash_data_t::const_iterator end_itr = hash.end();

@@ -90,7 +90,7 @@ KoNDNStrategy::afterReceiveInterest(const FaceEndpoint& ingress, const Interest&
     if (it == nexthops.end()) {
       NFD_LOG_DEBUG(interest << " from=" << ingress << " noNextHop");
       if (protocol.toUri() == "/kademlia") {
-        std::cout << "********** SWITCH TO NDN ROUTING **********\n";
+        // std::cout << "********** SWITCH TO NDN ROUTING **********\n";
         interest.setProtocol("ndn");
         interest.setAgentNodeID(this->getNodeID());
 

@@ -60,10 +60,12 @@
             // $ waf shell
             // $ env
             "environment": [
+                /*
                 {
                     "Name": "NS_LOG",
                     "Value": "*=level_debug|prefix_func|prefix_time|prefix_node"
                 },
+                */
                 {
                     "Name": "PYTHONPATH",
                     "Value": "/home/strea/ndnSIM/ns-3/build/bindings/python:/home/strea/ndnSIM/ns-3/src/visualizer:/home/strea/ndnSIM/pybindgen"
