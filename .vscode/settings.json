@@ -1,3 +1,7 @@
 {
-    "clang-format.executable": "/usr/bin/clang-format-14"
+    "clang-format.executable": "/usr/bin/clang-format-14",
+    "files.associations": {
+        "iostream": "cpp",
+        "ostream": "cpp"
+    }
 }

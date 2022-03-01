@@ -100,6 +100,12 @@ Forwarder::onIncomingInterest(const FaceEndpoint& ingress, const Interest& inter
   // receive Interest
   NFD_LOG_DEBUG("onIncomingInterest in=" << ingress << " interest=" << interest.getProtocolString()
                                          << ": " << interest.getName());
+  if (Name("/localhost").isPrefixOf(interest.getName())) {
+    const ndn::time::system_clock::TimePoint now = time::system_clock::now();
+    std::cout << time::toUnixTimestamp(now) << ",II,INGRESS: " << ingress
+              << " CURR_NODE: " << m_nodeId.toUri() << " INAME: " << interest.getName().toUri() << " ITYPE:" << interest.getProtocolString()
+              << std::endl;
+  }
   interest.setTag(make_shared<lp::IncomingFaceIdTag>(ingress.face.getId()));
   ++m_counters.nInInterests;
 
@@ -116,7 +122,8 @@ Forwarder::onIncomingInterest(const FaceEndpoint& ingress, const Interest& inter
   // /localhost scope control
   bool isLocalPacket = scope_prefix::LOCALHOST.isPrefixOf(interest.getName());
   if (!isLocalPacket) {
-    NFD_LOG_DEBUG("Hola! " << interest.getName().toUri() << "(" << interest.getHashedName().toUri() << ")");
+    NFD_LOG_DEBUG("Hola! " << interest.getName().toUri() << "(" << interest.getHashedName().toUri()
+                           << ")");
   }
 
   // detect duplicate Nonce with Dead Nonce List
@@ -234,6 +241,11 @@ Forwarder::onContentStoreHit(const FaceEndpoint& ingress, const shared_ptr<pit::
   ++m_counters.nCsHits;
   afterCsHit(interest, data);
 
+  const ndn::time::system_clock::TimePoint now = time::system_clock::now();
+  std::cout << time::toUnixTimestamp(now) << ",CH,INGRESS: " << ingress
+            << " CURR_NODE: " << m_nodeId.toUri() << " INAME: " << interest.getName().toUri()
+            << std::endl;
+
   data.setTag(make_shared<lp::IncomingFaceIdTag>(face::FACEID_CONTENT_STORE));
   // FIXME Should we lookup PIT for other Interests that also match the
   // data?
@@ -267,8 +279,10 @@ Forwarder::onOutgoingInterest(const shared_ptr<pit::Entry>& pitEntry, const Face
   std::string prefix = "/localhost";
   std::string name = interest.getName().toUri();
   if (std::mismatch(prefix.begin(), prefix.end(), name.begin(), name.end()).first != prefix.end()) {
-    std::cout << "OI " << "CURR_NODE: " << m_nodeId.toUri() << " INAME: " << interest.getName().toUri()
-              << std::endl;
+    const ndn::time::system_clock::TimePoint now = time::system_clock::now();
+    std::cout << time::toUnixTimestamp(now) << ",OI,"
+              << "CURR_NODE: " << m_nodeId.toUri() << " INAME: " << interest.getName().toUri()
+              << " ITYPE:" << interest.getProtocolString() << std::endl;
   }
 
   // send Interest
@@ -320,7 +334,9 @@ Forwarder::onIncomingData(const FaceEndpoint& ingress, const Data& data)
     return;
   }
   else if (!scope_prefix::LOCALHOST.isPrefixOf(data.getName())) {
-    std::cout << "ID INGRESS: " << ingress << " DNAME: " << data.getName() << std::endl;
+    const ndn::time::system_clock::TimePoint now = time::system_clock::now();
+    std::cout << time::toUnixTimestamp(now) << ",ID,INGRESS: " << ingress << " CURR_NODE: " << m_nodeId.toUri()
+          << " DNAME: " << data.getName().toUri() << std::endl;
   }
 
   // PIT match
@@ -441,6 +457,14 @@ Forwarder::onOutgoingData(const Data& data, const FaceEndpoint& egress)
     return;
   }
   NFD_LOG_DEBUG("onOutgoingData out=" << egress << " data=" << data.getName());
+  std::string prefix = "/localhost";
+  std::string name = data.getName().toUri();
+  if (std::mismatch(prefix.begin(), prefix.end(), name.begin(), name.end()).first != prefix.end()) {
+    const ndn::time::system_clock::TimePoint now = time::system_clock::now();
+    std::cout << time::toUnixTimestamp(now) << ",OD,EGRESS: " << egress
+              << " CURR_NODE: " << m_nodeId.toUri() << " DNAME: " << data.getName().toUri()
+              << std::endl;
+  }
 
   // /localhost scope control
   bool isViolatingLocalhost = egress.face.getScope() == ndn::nfd::FACE_SCOPE_NON_LOCAL
