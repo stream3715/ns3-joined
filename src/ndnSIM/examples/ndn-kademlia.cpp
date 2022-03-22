@@ -136,58 +136,58 @@ main(int argc, char* argv[])
 
   ndnGlobalRoutingHelper.AddOrigins(prefix, producerMain);
 
-  NodeContainer mainConsumerNodes;
-  mainConsumerNodes.Add(Names::Find<Node>("rtr-17"));
+  NodeContainer majorConsumerNodes;
 
-  NodeContainer subConsumerNodes;
+  majorConsumerNodes.Add(Names::Find<Node>("rtr-1"));
+  majorConsumerNodes.Add(Names::Find<Node>("rtr-2"));
+  majorConsumerNodes.Add(Names::Find<Node>("rtr-3"));
+  majorConsumerNodes.Add(Names::Find<Node>("rtr-4"));
+  majorConsumerNodes.Add(Names::Find<Node>("rtr-5"));
+  majorConsumerNodes.Add(Names::Find<Node>("rtr-6"));
+  majorConsumerNodes.Add(Names::Find<Node>("rtr-7"));
+  majorConsumerNodes.Add(Names::Find<Node>("rtr-8"));
+  majorConsumerNodes.Add(Names::Find<Node>("rtr-9"));
+  majorConsumerNodes.Add(Names::Find<Node>("rtr-10"));
+  majorConsumerNodes.Add(Names::Find<Node>("rtr-11"));
+  majorConsumerNodes.Add(Names::Find<Node>("rtr-12"));
+  majorConsumerNodes.Add(Names::Find<Node>("rtr-13"));
+  majorConsumerNodes.Add(Names::Find<Node>("rtr-14"));
+  majorConsumerNodes.Add(Names::Find<Node>("rtr-15"));
+  majorConsumerNodes.Add(Names::Find<Node>("rtr-16"));
+  majorConsumerNodes.Add(Names::Find<Node>("rtr-17"));
+  majorConsumerNodes.Add(Names::Find<Node>("rtr-18"));
+  majorConsumerNodes.Add(Names::Find<Node>("rtr-19"));
+  majorConsumerNodes.Add(Names::Find<Node>("rtr-20"));
+  majorConsumerNodes.Add(Names::Find<Node>("rtr-21"));
+  majorConsumerNodes.Add(Names::Find<Node>("rtr-22"));
+  majorConsumerNodes.Add(Names::Find<Node>("rtr-23"));
+  majorConsumerNodes.Add(Names::Find<Node>("rtr-24"));
+  majorConsumerNodes.Add(Names::Find<Node>("rtr-25"));
+  majorConsumerNodes.Add(Names::Find<Node>("rtr-26"));
+  majorConsumerNodes.Add(Names::Find<Node>("rtr-27"));
+  majorConsumerNodes.Add(Names::Find<Node>("rtr-28"));
+  majorConsumerNodes.Add(Names::Find<Node>("rtr-29"));
+  majorConsumerNodes.Add(Names::Find<Node>("rtr-30"));
+  majorConsumerNodes.Add(Names::Find<Node>("rtr-31"));
+  majorConsumerNodes.Add(Names::Find<Node>("rtr-32"));
+  majorConsumerNodes.Add(Names::Find<Node>("rtr-33"));
+  majorConsumerNodes.Add(Names::Find<Node>("rtr-34"));
+  majorConsumerNodes.Add(Names::Find<Node>("rtr-35"));
+  majorConsumerNodes.Add(Names::Find<Node>("rtr-36"));
+  majorConsumerNodes.Add(Names::Find<Node>("rtr-37"));
 
-  subConsumerNodes.Add(Names::Find<Node>("rtr-1"));
-  subConsumerNodes.Add(Names::Find<Node>("rtr-2"));
-  subConsumerNodes.Add(Names::Find<Node>("rtr-3"));
-  subConsumerNodes.Add(Names::Find<Node>("rtr-4"));
-  subConsumerNodes.Add(Names::Find<Node>("rtr-5"));
-  subConsumerNodes.Add(Names::Find<Node>("rtr-6"));
-  subConsumerNodes.Add(Names::Find<Node>("rtr-7"));
-  subConsumerNodes.Add(Names::Find<Node>("rtr-8"));
-  subConsumerNodes.Add(Names::Find<Node>("rtr-9"));
-  subConsumerNodes.Add(Names::Find<Node>("rtr-10"));
-  subConsumerNodes.Add(Names::Find<Node>("rtr-11"));
-  subConsumerNodes.Add(Names::Find<Node>("rtr-12"));
-  subConsumerNodes.Add(Names::Find<Node>("rtr-13"));
-  subConsumerNodes.Add(Names::Find<Node>("rtr-14"));
-  subConsumerNodes.Add(Names::Find<Node>("rtr-15"));
-  subConsumerNodes.Add(Names::Find<Node>("rtr-16"));
-  // subConsumerNodes.Add(Names::Find<Node>("rtr-17"));
-  subConsumerNodes.Add(Names::Find<Node>("rtr-18"));
-  subConsumerNodes.Add(Names::Find<Node>("rtr-19"));
-  subConsumerNodes.Add(Names::Find<Node>("rtr-20"));
-  subConsumerNodes.Add(Names::Find<Node>("rtr-21"));
-  subConsumerNodes.Add(Names::Find<Node>("rtr-22"));
-  subConsumerNodes.Add(Names::Find<Node>("rtr-23"));
-  subConsumerNodes.Add(Names::Find<Node>("rtr-24"));
-  subConsumerNodes.Add(Names::Find<Node>("rtr-25"));
-  subConsumerNodes.Add(Names::Find<Node>("rtr-26"));
-  subConsumerNodes.Add(Names::Find<Node>("rtr-27"));
-  subConsumerNodes.Add(Names::Find<Node>("rtr-28"));
-  subConsumerNodes.Add(Names::Find<Node>("rtr-29"));
-  subConsumerNodes.Add(Names::Find<Node>("rtr-30"));
-  subConsumerNodes.Add(Names::Find<Node>("rtr-31"));
-  subConsumerNodes.Add(Names::Find<Node>("rtr-32"));
-  subConsumerNodes.Add(Names::Find<Node>("rtr-33"));
-  subConsumerNodes.Add(Names::Find<Node>("rtr-34"));
-  // subConsumerNodes.Add(Names::Find<Node>("rtr-35"));
-  subConsumerNodes.Add(Names::Find<Node>("rtr-36"));
-  subConsumerNodes.Add(Names::Find<Node>("rtr-37"));
+  ndn::AppHelper majorConsumerHelper("ns3::ndn::ConsumerZipfMandelbrot");
+  majorConsumerHelper.SetPrefix(prefix + "/major");
+  majorConsumerHelper.SetAttribute("Frequency", StringValue("100")); // 100 interests a second
+  majorConsumerHelper.Install(majorConsumerNodes);
 
-  ndn::AppHelper consumerHelper("ns3::ndn::ConsumerZipfMandelbrot");
-  consumerHelper.SetPrefix(prefix);
-  consumerHelper.SetAttribute("Frequency", StringValue("100")); // 100 interests a second
-  consumerHelper.Install(mainConsumerNodes);
+  NodeContainer minorConsumerNodes;
+  minorConsumerNodes.Add(Names::Find<Node>("rtr-17"));
 
-  ndn::AppHelper subConsumerHelper("ns3::ndn::ConsumerZipfMandelbrot");
-  subConsumerHelper.SetPrefix(prefix);
-  subConsumerHelper.SetAttribute("Frequency", StringValue("100"));
-  subConsumerHelper.Install(subConsumerNodes);
+  ndn::AppHelper minorConsumerHelper("ns3::ndn::ConsumerZipfMandelbrot");
+  minorConsumerHelper.SetPrefix(prefix + "/minor");
+  minorConsumerHelper.SetAttribute("Frequency", StringValue("1"));
+  minorConsumerHelper.Install(minorConsumerNodes);
 
   // Add Kademlia Based Routes to Node
   for (const auto& e : array | boost::adaptors::indexed()) {

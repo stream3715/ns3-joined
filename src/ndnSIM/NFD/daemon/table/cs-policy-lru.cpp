@@ -92,6 +92,7 @@ LruPolicy::insertToQueue(EntryRef i, bool isNewEntry, bool isAgent)
 {
   Queue::iterator it;
   bool isNew = false;
+  string dataName = i->getName().toUri();
   // push_back only if i does not exist
   std::tie(it, isNew) = m_queue[isAgent ? QUEUE_AGENT : QUEUE_NORMAL].push_back(i);
   if (isNew != isNewEntry && isAgent == false) {

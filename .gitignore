@@ -89,3 +89,4 @@ configure
 toggle
 *.tsv
 log.txt
+err.txt
