@@ -107,6 +107,7 @@ Fib::insert(const Name& prefix)
   }
 
   nte.setFibEntry(make_unique<Entry>(prefix));
+  std::cout << "FIBI INS " << prefix.toUri() << std::endl;
   ++m_nItems;
   return {nte.getFibEntry(), true};
 }
