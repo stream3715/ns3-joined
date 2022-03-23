@@ -61,14 +61,8 @@ LruPolicy::doAfterRefresh(EntryRef i, bool isAgent)
 void
 LruPolicy::doBeforeErase(EntryRef i, bool isAgent)
 {
-  EntryRef target = m_queue.front();
-  while ((m_entryInfoMap[target])->queueType == QUEUE_AGENT) {
-    target++;
-    if (target == m_queue.back()) {
-      return;
-    }
-  }
-  m_queue.get<1>().erase(target);
+  m_queue.get<1>().erase(i);
+  m_entryInfoMap.erase(i);
 }
 
 void
