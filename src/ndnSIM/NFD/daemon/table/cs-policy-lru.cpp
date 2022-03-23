@@ -42,7 +42,7 @@ void
 LruPolicy::doAfterInsert(EntryRef i, bool isAgent)
 {
   this->insertToQueue(i, true, isAgent);
-  this->evictEntries(isAgent);
+  this->evictEntries();
 }
 
 void
@@ -69,12 +69,25 @@ LruPolicy::evictEntries()
   BOOST_ASSERT(this->getCs() != nullptr);
   while (this->getCs()->size() > this->getLimit()) {
     BOOST_ASSERT(!m_queue[QUEUE_NORMAL].empty());
-    EntryRef i = m_queue[QUEUE_NORMAL].front();
-    m_queue[QUEUE_NORMAL].pop_front();
+    EntryRef i;
+
+    if (!m_queue[QUEUE_NORMAL].empty()) {
+      i = m_queue[QUEUE_NORMAL].front();
+      m_queue[QUEUE_NORMAL].pop_front();
+    }
+    else {
+      i = m_queue[QUEUE_AGENT].front();
+      m_queue[QUEUE_AGENT].pop_front();
+    }
+
     this->emitSignal(beforeEvict, i);
   }
 }
 
+/*
+一般に通常領域(m_queue[QUEUE_NORMAL])のほうがエントリが多く、QUEUE_NORMALから削除で固定したため
+この関数は一旦未使用
+*/
 void
 LruPolicy::evictEntries(bool isAgent)
 {
@@ -95,9 +108,12 @@ LruPolicy::insertToQueue(EntryRef i, bool isNewEntry, bool isAgent)
   string dataName = i->getName().toUri();
   // push_back only if i does not exist
   std::tie(it, isNew) = m_queue[isAgent ? QUEUE_AGENT : QUEUE_NORMAL].push_back(i);
+
+  //　これは実装しておいてなんですがだいぶ謎(ASSERT試験では削除しました)
   if (isNew != isNewEntry && isAgent == false) {
     std::tie(it, isNew) = m_queue[QUEUE_AGENT].push_back(i);
   }
+  // ここまで謎
 
   BOOST_ASSERT(isNew == isNewEntry);
   if (!isNewEntry) {
