@@ -42,13 +42,20 @@ using Queue = boost::multi_index_container<
     boost::multi_index::sequenced<>,
     boost::multi_index::ordered_unique<boost::multi_index::identity<Policy::EntryRef>>>>;
 
-enum QueueType { QUEUE_NORMAL, QUEUE_AGENT, QUEUE_MAX };
+enum QueueType { QUEUE_NORMAL, QUEUE_AGENT };
+
+struct EntryInfo {
+  QueueType queueType;
+  Queue::iterator queueIt;
+};
 
 /** \brief Least-Recently-Used (LRU) replacement policy
  */
 class LruPolicy : public Policy {
 public:
   LruPolicy();
+
+  ~LruPolicy() override;
 
 public:
   static const std::string POLICY_NAME;
@@ -64,15 +71,14 @@ private:
 
   void evictEntries() override;
 
-  void evictEntries(bool isAgent);
-
 private:
   /** \brief moves an entry to the end of queue
    */
   void insertToQueue(EntryRef i, bool isNewEntry, bool isAgent = false);
 
 private:
-  Queue m_queue[QUEUE_MAX];
+  Queue m_queue;
+  std::map<EntryRef, EntryInfo*> m_entryInfoMap;
 };
 
 } // namespace lru

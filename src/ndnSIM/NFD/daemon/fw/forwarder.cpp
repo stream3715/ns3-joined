@@ -103,8 +103,8 @@ Forwarder::onIncomingInterest(const FaceEndpoint& ingress, const Interest& inter
   if (Name("/localhost").isPrefixOf(interest.getName())) {
     const ndn::time::system_clock::TimePoint now = time::system_clock::now();
     std::cout << time::toUnixTimestamp(now) << ",II,INGRESS: " << ingress
-              << " CURR_NODE: " << m_nodeId.toUri() << " INAME: " << interest.getName().toUri() << " ITYPE:" << interest.getProtocolString()
-              << std::endl;
+              << " CURR_NODE: " << m_nodeId.toUri() << " INAME: " << interest.getName().toUri()
+              << " ITYPE:" << interest.getProtocolString() << std::endl;
   }
   interest.setTag(make_shared<lp::IncomingFaceIdTag>(ingress.face.getId()));
   ++m_counters.nInInterests;
@@ -336,8 +336,9 @@ Forwarder::onIncomingData(const FaceEndpoint& ingress, const Data& data)
   }
   else if (!scope_prefix::LOCALHOST.isPrefixOf(data.getName())) {
     const ndn::time::system_clock::TimePoint now = time::system_clock::now();
-    std::cout << time::toUnixTimestamp(now) << ",ID,INGRESS: " << ingress << " CURR_NODE: " << m_nodeId.toUri()
-          << " DNAME: " << data.getName().toUri() << std::endl;
+    std::cout << time::toUnixTimestamp(now) << ",ID,INGRESS: " << ingress
+              << " CURR_NODE: " << m_nodeId.toUri() << " DNAME: " << data.getName().toUri()
+              << std::endl;
   }
 
   // PIT match

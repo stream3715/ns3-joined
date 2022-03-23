@@ -38,6 +38,13 @@ LruPolicy::LruPolicy()
 {
 }
 
+LruPolicy::~LruPolicy()
+{
+  for (auto entryInfoMapPair : m_entryInfoMap) {
+    delete entryInfoMapPair.second;
+  }
+}
+
 void
 LruPolicy::doAfterInsert(EntryRef i, bool isAgent)
 {
@@ -54,7 +61,14 @@ LruPolicy::doAfterRefresh(EntryRef i, bool isAgent)
 void
 LruPolicy::doBeforeErase(EntryRef i, bool isAgent)
 {
-  m_queue[isAgent ? QUEUE_AGENT : QUEUE_NORMAL].get<1>().erase(i);
+  EntryRef target = m_queue.front();
+  while ((m_entryInfoMap[target])->queueType == QUEUE_AGENT) {
+    target++;
+    if (target == m_queue.back()) {
+      return;
+    }
+  }
+  m_queue.get<1>().erase(target);
 }
 
 void
@@ -68,35 +82,18 @@ LruPolicy::evictEntries()
 {
   BOOST_ASSERT(this->getCs() != nullptr);
   while (this->getCs()->size() > this->getLimit()) {
-    BOOST_ASSERT(!m_queue[QUEUE_NORMAL].empty());
-    EntryRef i;
+    BOOST_ASSERT(!m_queue.empty());
 
-    if (!m_queue[QUEUE_NORMAL].empty()) {
-      i = m_queue[QUEUE_NORMAL].front();
-      m_queue[QUEUE_NORMAL].pop_front();
+    // 先頭がAgent Nodeにおけるキャッシュでなくなるまでインクリメント
+    for (auto it = m_queue.begin(); it != m_queue.end(); it++) {
+      if (m_entryInfoMap[*it]->queueType != QUEUE_AGENT) {
+        EntryRef er = *it;
+        m_entryInfoMap.erase(er);
+        this->emitSignal(beforeEvict, er);
+        m_queue.erase(it);
+        return;
+      }
     }
-    else {
-      i = m_queue[QUEUE_AGENT].front();
-      m_queue[QUEUE_AGENT].pop_front();
-    }
-
-    this->emitSignal(beforeEvict, i);
-  }
-}
-
-/*
-一般に通常領域(m_queue[QUEUE_NORMAL])のほうがエントリが多く、QUEUE_NORMALから削除で固定したため
-この関数は一旦未使用
-*/
-void
-LruPolicy::evictEntries(bool isAgent)
-{
-  BOOST_ASSERT(this->getCs() != nullptr);
-  while (this->getCs()->size() > this->getLimit()) {
-    BOOST_ASSERT(!m_queue[isAgent ? QUEUE_AGENT : QUEUE_NORMAL].empty());
-    EntryRef i = m_queue[isAgent ? QUEUE_AGENT : QUEUE_NORMAL].front();
-    m_queue[isAgent ? QUEUE_AGENT : QUEUE_NORMAL].pop_front();
-    this->emitSignal(beforeEvict, i);
   }
 }
 
@@ -105,20 +102,21 @@ LruPolicy::insertToQueue(EntryRef i, bool isNewEntry, bool isAgent)
 {
   Queue::iterator it;
   bool isNew = false;
-  string dataName = i->getName().toUri();
   // push_back only if i does not exist
-  std::tie(it, isNew) = m_queue[isAgent ? QUEUE_AGENT : QUEUE_NORMAL].push_back(i);
-
-  //　これは実装しておいてなんですがだいぶ謎(ASSERT試験では削除しました)
-  if (isNew != isNewEntry && isAgent == false) {
-    std::tie(it, isNew) = m_queue[QUEUE_AGENT].push_back(i);
-  }
-  // ここまで謎
+  std::tie(it, isNew) = m_queue.push_back(i);
 
   BOOST_ASSERT(isNew == isNewEntry);
   if (!isNewEntry) {
-    m_queue[isAgent ? QUEUE_AGENT : QUEUE_NORMAL]
-      .relocate(m_queue[isAgent ? QUEUE_AGENT : QUEUE_NORMAL].end(), it);
+    m_queue.relocate(m_queue.end(), it);
+    if (isAgent) {
+      m_entryInfoMap[i]->queueType = QUEUE_AGENT;
+    }
+  }
+  else {
+    EntryInfo* entryInfo = new EntryInfo();
+    entryInfo->queueType = !isAgent ? QUEUE_NORMAL : QUEUE_AGENT;
+    entryInfo->queueIt = it;
+    m_entryInfoMap[i] = entryInfo;
   }
 }
 
