@@ -223,11 +223,7 @@ Hashtable::findOrInsertByID(const Name& contentName, HashValue h, std::string cu
   std::string contentString = contentName.toUri().substr(1);
 
   const std::vector<int> contentHash = decode(contentString);
-  const std::vector<int> currentHash = decode(currentId);
-
-  std::vector<int> minimumDistance(40);
-  std::transform(currentHash.begin(), currentHash.end(), contentHash.begin(),
-                 minimumDistance.begin(), std::bit_xor<int>{});
+  std::vector<int> minimumDistance = decode(currentId);
 
   const Node* nearestPtr = 0;
 
