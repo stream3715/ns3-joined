@@ -134,11 +134,12 @@ main(int argc, char* argv[])
   producerHelper.SetPrefix(prefix);
   producerHelper.Install(producerMain); // last node
 
-  ndnGlobalRoutingHelper.AddOrigins(prefix, producerMain);
+  // ndnGlobalRoutingHelper.AddOrigins(prefix, producerMain);
 
   NodeContainer majorConsumerNodes;
 
   majorConsumerNodes.Add(Names::Find<Node>("rtr-1"));
+  /*
   majorConsumerNodes.Add(Names::Find<Node>("rtr-2"));
   majorConsumerNodes.Add(Names::Find<Node>("rtr-3"));
   majorConsumerNodes.Add(Names::Find<Node>("rtr-4"));
@@ -154,7 +155,6 @@ main(int argc, char* argv[])
   majorConsumerNodes.Add(Names::Find<Node>("rtr-14"));
   majorConsumerNodes.Add(Names::Find<Node>("rtr-15"));
   majorConsumerNodes.Add(Names::Find<Node>("rtr-16"));
-  majorConsumerNodes.Add(Names::Find<Node>("rtr-17"));
   majorConsumerNodes.Add(Names::Find<Node>("rtr-18"));
   majorConsumerNodes.Add(Names::Find<Node>("rtr-19"));
   majorConsumerNodes.Add(Names::Find<Node>("rtr-20"));
@@ -164,7 +164,7 @@ main(int argc, char* argv[])
   majorConsumerNodes.Add(Names::Find<Node>("rtr-24"));
   majorConsumerNodes.Add(Names::Find<Node>("rtr-25"));
   majorConsumerNodes.Add(Names::Find<Node>("rtr-26"));
-  majorConsumerNodes.Add(Names::Find<Node>("rtr-27"));
+  majorConsumerNodes.Add(Names::Find<Node>("rtr-17"));
   majorConsumerNodes.Add(Names::Find<Node>("rtr-28"));
   majorConsumerNodes.Add(Names::Find<Node>("rtr-29"));
   majorConsumerNodes.Add(Names::Find<Node>("rtr-30"));
@@ -175,20 +175,21 @@ main(int argc, char* argv[])
   majorConsumerNodes.Add(Names::Find<Node>("rtr-35"));
   majorConsumerNodes.Add(Names::Find<Node>("rtr-36"));
   majorConsumerNodes.Add(Names::Find<Node>("rtr-37"));
+  */
 
   ndn::AppHelper majorConsumerHelper("ns3::ndn::ConsumerZipfMandelbrot");
   majorConsumerHelper.SetPrefix(prefix + "/major");
   majorConsumerHelper.SetAttribute("Frequency", StringValue("100")); // 100 interests a second
   majorConsumerHelper.Install(majorConsumerNodes);
-
+/*
   NodeContainer minorConsumerNodes;
-  minorConsumerNodes.Add(Names::Find<Node>("rtr-17"));
+  minorConsumerNodes.Add(Names::Find<Node>("rtr-27"));
 
   ndn::AppHelper minorConsumerHelper("ns3::ndn::ConsumerZipfMandelbrot");
   minorConsumerHelper.SetPrefix(prefix + "/minor");
   minorConsumerHelper.SetAttribute("Frequency", StringValue("1"));
   minorConsumerHelper.Install(minorConsumerNodes);
-
+*/
   // Add Kademlia Based Routes to Node
   for (const auto& e : array | boost::adaptors::indexed()) {
     auto index = e.index();
