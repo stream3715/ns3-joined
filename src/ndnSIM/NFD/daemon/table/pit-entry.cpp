@@ -40,6 +40,17 @@ Entry::canMatch(const Interest& interest, size_t nEqualNameComps) const
 {
   BOOST_ASSERT(
     m_interest->getName().compare(0, nEqualNameComps, interest.getName(), 0, nEqualNameComps) == 0);
+  std::string content = m_interest->getName().toUri();
+  std::string econtent = interest.getName().toUri();
+  std::string suffix = "FEU";
+
+  if (content.size() >= suffix.size()
+      && 0 == content.compare(content.size() - suffix.size(), suffix.size(), suffix)) {
+    cout << "";
+  }
+
+  auto pit_protocol = m_interest->getProtocol().toUri();
+  auto packet_protocol = interest.getProtocol().toUri();
 
   return m_interest->getName().compare(nEqualNameComps, Name::npos, interest.getName(),
                                        nEqualNameComps)
