@@ -42,38 +42,47 @@ namespace nfd {
 
 namespace fw {
 class Strategy;
-}  // namespace fw
+} // namespace fw
 
 /** \brief Main class of NFD's forwarding engine.
  *
  *  Forwarder owns all tables and implements the forwarding pipelines.
  */
 class Forwarder {
- public:
+public:
   explicit Forwarder(FaceTable& faceTable, std::string id);
 
   VIRTUAL_WITH_TESTS
   ~Forwarder();
 
-  const ForwarderCounters& getCounters() const { return m_counters; }
+  const ForwarderCounters&
+  getCounters() const
+  {
+    return m_counters;
+  }
 
-  fw::UnsolicitedDataPolicy& getUnsolicitedDataPolicy() const {
+  fw::UnsolicitedDataPolicy&
+  getUnsolicitedDataPolicy() const
+  {
     return *m_unsolicitedDataPolicy;
   }
 
-  void setUnsolicitedDataPolicy(unique_ptr<fw::UnsolicitedDataPolicy> policy) {
+  void
+  setUnsolicitedDataPolicy(unique_ptr<fw::UnsolicitedDataPolicy> policy)
+  {
     BOOST_ASSERT(policy != nullptr);
     m_unsolicitedDataPolicy = std::move(policy);
   }
 
- public:  // forwarding entrypoints and tables
+public: // forwarding entrypoints and tables
   /** \brief start incoming Interest processing
    *  \param ingress face on which Interest is received and endpoint of the
    * sender \param interest the incoming Interest, must be well-formed and
    * created with make_shared
    */
-  void startProcessInterest(const FaceEndpoint& ingress,
-                            const Interest& interest) {
+  void
+  startProcessInterest(const FaceEndpoint& ingress, const Interest& interest)
+  {
     this->onIncomingInterest(ingress, interest);
   }
 
@@ -82,7 +91,9 @@ class Forwarder {
    *  \param data the incoming Data, must be well-formed and created with
    * make_shared
    */
-  void startProcessData(const FaceEndpoint& ingress, const Data& data) {
+  void
+  startProcessData(const FaceEndpoint& ingress, const Data& data)
+  {
     this->onIncomingData(ingress, data);
   }
 
@@ -90,7 +101,9 @@ class Forwarder {
    *  \param ingress face on which Nack is received and endpoint of the sender
    *  \param nack the incoming Nack, must be well-formed
    */
-  void startProcessNack(const FaceEndpoint& ingress, const lp::Nack& nack) {
+  void
+  startProcessNack(const FaceEndpoint& ingress, const lp::Nack& nack)
+  {
     this->onIncomingNack(ingress, nack);
   }
 
@@ -98,29 +111,67 @@ class Forwarder {
    *  \param prefix the prefix of the FibEntry containing the new nexthop
    *  \param nextHop the new NextHop
    */
-  void startProcessNewNextHop(const Name& prefix, const fib::NextHop& nextHop) {
+  void
+  startProcessNewNextHop(const Name& prefix, const fib::NextHop& nextHop)
+  {
     this->onNewNextHop(prefix, nextHop);
   }
 
-  NameTree& getNameTree() { return m_nameTree; }
+  NameTree&
+  getNameTree()
+  {
+    return m_nameTree;
+  }
 
-  Fib& getFib() { return m_fib; }
+  Fib&
+  getFib()
+  {
+    return m_fib;
+  }
 
-  Pit& getPit() { return m_pit; }
+  Pit&
+  getPit()
+  {
+    return m_pit;
+  }
 
-  Cs& getCs() { return m_cs; }
+  Cs&
+  getCs()
+  {
+    return m_cs;
+  }
 
-  Name& getNodeId() { return m_nodeId; }
+  Name&
+  getNodeId()
+  {
+    return m_nodeId;
+  }
 
-  Measurements& getMeasurements() { return m_measurements; }
+  Measurements&
+  getMeasurements()
+  {
+    return m_measurements;
+  }
 
-  StrategyChoice& getStrategyChoice() { return m_strategyChoice; }
+  StrategyChoice&
+  getStrategyChoice()
+  {
+    return m_strategyChoice;
+  }
 
-  DeadNonceList& getDeadNonceList() { return m_deadNonceList; }
+  DeadNonceList&
+  getDeadNonceList()
+  {
+    return m_deadNonceList;
+  }
 
-  NetworkRegionTable& getNetworkRegionTable() { return m_networkRegionTable; }
+  NetworkRegionTable&
+  getNetworkRegionTable()
+  {
+    return m_networkRegionTable;
+  }
 
- public:
+public:
   /** \brief trigger before PIT entry is satisfied
    *  \sa Strategy::beforeSatisfyInterest
    */
@@ -142,102 +193,90 @@ class Forwarder {
   signal::Signal<Forwarder, Interest> afterCsMiss;
 
   PUBLIC_WITH_TESTS_ELSE_PRIVATE
-      :  // pipelines
-         /** \brief incoming Interest pipeline
-          */
-         VIRTUAL_WITH_TESTS void
-         onIncomingInterest(const FaceEndpoint& ingress,
-                            const Interest& interest);
+    : // pipelines
+      /** \brief incoming Interest pipeline
+       */
+      VIRTUAL_WITH_TESTS void
+      onIncomingInterest(const FaceEndpoint& ingress, const Interest& interest);
 
   /** \brief Interest loop pipeline
    */
-  VIRTUAL_WITH_TESTS void onInterestLoop(const FaceEndpoint& ingress,
-                                         const Interest& interest);
+  VIRTUAL_WITH_TESTS void onInterestLoop(const FaceEndpoint& ingress, const Interest& interest);
 
   /** \brief Content Store miss pipeline
    */
-  VIRTUAL_WITH_TESTS void onContentStoreMiss(
-      const FaceEndpoint& ingress, const shared_ptr<pit::Entry>& pitEntry,
-      const Interest& interest);
+  VIRTUAL_WITH_TESTS void
+  onContentStoreMiss(const FaceEndpoint& ingress, const shared_ptr<pit::Entry>& pitEntry,
+                     const Interest& interest);
 
   /** \brief Content Store hit pipeline
    */
-  VIRTUAL_WITH_TESTS void onContentStoreHit(
-      const FaceEndpoint& ingress, const shared_ptr<pit::Entry>& pitEntry,
-      const Interest& interest, const Data& data);
+  VIRTUAL_WITH_TESTS void
+  onContentStoreHit(const FaceEndpoint& ingress, const shared_ptr<pit::Entry>& pitEntry,
+                    const Interest& interest, const Data& data);
 
   /** \brief outgoing Interest pipeline
    */
-  VIRTUAL_WITH_TESTS void onOutgoingInterest(
-      const shared_ptr<pit::Entry>& pitEntry, const FaceEndpoint& egress,
-      const Interest& interest);
+  VIRTUAL_WITH_TESTS void onOutgoingInterest(const shared_ptr<pit::Entry>& pitEntry,
+                                             const FaceEndpoint& egress, const Interest& interest);
 
   /** \brief Interest finalize pipeline
    */
-  VIRTUAL_WITH_TESTS void onInterestFinalize(
-      const shared_ptr<pit::Entry>& pitEntry);
+  VIRTUAL_WITH_TESTS void onInterestFinalize(const shared_ptr<pit::Entry>& pitEntry);
 
   /** \brief incoming Data pipeline
    */
-  VIRTUAL_WITH_TESTS void onIncomingData(const FaceEndpoint& ingress,
-                                         const Data& data);
+  VIRTUAL_WITH_TESTS void onIncomingData(const FaceEndpoint& ingress, const Data& data);
 
   /** \brief Data unsolicited pipeline
    */
-  VIRTUAL_WITH_TESTS void onDataUnsolicited(const FaceEndpoint& ingress,
-                                            const Data& data);
+  VIRTUAL_WITH_TESTS void onDataUnsolicited(const FaceEndpoint& ingress, const Data& data);
 
   /** \brief outgoing Data pipeline
    */
-  VIRTUAL_WITH_TESTS void onOutgoingData(const Data& data,
-                                         const FaceEndpoint& egress);
+  VIRTUAL_WITH_TESTS void onOutgoingData(const Data& data, const FaceEndpoint& egress);
 
   /** \brief incoming Nack pipeline
    */
-  VIRTUAL_WITH_TESTS void onIncomingNack(const FaceEndpoint& ingress,
-                                         const lp::Nack& nack);
+  VIRTUAL_WITH_TESTS void onIncomingNack(const FaceEndpoint& ingress, const lp::Nack& nack);
 
   /** \brief outgoing Nack pipeline
    */
   VIRTUAL_WITH_TESTS void onOutgoingNack(const shared_ptr<pit::Entry>& pitEntry,
-                                         const FaceEndpoint& egress,
-                                         const lp::NackHeader& nack);
+                                         const FaceEndpoint& egress, const lp::NackHeader& nack);
 
-  VIRTUAL_WITH_TESTS void onDroppedInterest(const FaceEndpoint& egress,
-                                            const Interest& interest);
+  VIRTUAL_WITH_TESTS void onDroppedInterest(const FaceEndpoint& egress, const Interest& interest);
 
-  VIRTUAL_WITH_TESTS void onNewNextHop(const Name& prefix,
-                                       const fib::NextHop& nextHop);
+  VIRTUAL_WITH_TESTS void onNewNextHop(const Name& prefix, const fib::NextHop& nextHop);
 
   PROTECTED_WITH_TESTS_ELSE_PRIVATE :
-      /** \brief set a new expiry timer (now + \p duration) on a PIT entry
-       */
-      void
-      setExpiryTimer(const shared_ptr<pit::Entry>& pitEntry,
-                     time::milliseconds duration);
+    /** \brief set a new expiry timer (now + \p duration) on a PIT entry
+     */
+    void
+    setExpiryTimer(const shared_ptr<pit::Entry>& pitEntry, time::milliseconds duration);
 
   /** \brief insert Nonce to Dead Nonce List if necessary
    *  \param upstream if null, insert Nonces from all out-records;
    *                  if not null, insert Nonce only on the out-records of this
    * face
    */
-  VIRTUAL_WITH_TESTS void insertDeadNonceList(pit::Entry& pitEntry,
-                                              Face* upstream);
+  VIRTUAL_WITH_TESTS void insertDeadNonceList(pit::Entry& pitEntry, Face* upstream);
 
   /** \brief call trigger (method) on the effective strategy of pitEntry
    */
 #ifdef WITH_TESTS
-  virtual void dispatchToStrategy(pit::Entry& pitEntry,
-                                  std::function<void(fw::Strategy&)> trigger)
+  virtual void
+  dispatchToStrategy(pit::Entry& pitEntry, std::function<void(fw::Strategy&)> trigger)
 #else
   template <class Function>
-  void dispatchToStrategy(pit::Entry& pitEntry, Function trigger)
+  void
+  dispatchToStrategy(pit::Entry& pitEntry, Function trigger)
 #endif
   {
     trigger(m_strategyChoice.findEffectiveStrategy(pitEntry));
   }
 
- private:
+private:
   ForwarderCounters m_counters;
 
   FaceTable& m_faceTable;
@@ -258,6 +297,6 @@ class Forwarder {
   friend class fw::Strategy;
 };
 
-}  // namespace nfd
+} // namespace nfd
 
-#endif  // NFD_DAEMON_FW_FORWARDER_HPP
+#endif // NFD_DAEMON_FW_FORWARDER_HPP

@@ -55,33 +55,34 @@ namespace fw {
  *  \note This strategy is not EndpointId-aware.
  */
 class KoNDNStrategy : public Strategy, public ProcessNackTraits<KoNDNStrategy> {
- public:
-  explicit KoNDNStrategy(Forwarder& forwarder,
-                         const Name& name = getStrategyName());
+public:
+  explicit KoNDNStrategy(Forwarder& forwarder, const Name& name = getStrategyName());
 
   static const Name& getStrategyName();
 
-  void afterReceiveInterest(const FaceEndpoint& ingress,
-                            const Interest& interest,
+  void afterReceiveInterest(const FaceEndpoint& ingress, const Interest& interest,
                             const shared_ptr<pit::Entry>& pitEntry) override;
 
   void afterReceiveNack(const FaceEndpoint& ingress, const lp::Nack& nack,
                         const shared_ptr<pit::Entry>& pitEntry) override;
 
-  PUBLIC_WITH_TESTS_ELSE_PRIVATE
-      : static const time::milliseconds RETX_SUPPRESSION_INITIAL;
+  PUBLIC_WITH_TESTS_ELSE_PRIVATE : static const time::milliseconds RETX_SUPPRESSION_INITIAL;
   static const time::milliseconds RETX_SUPPRESSION_MAX;
   RetxSuppressionExponential m_retxSuppression;
 
-  Name getNodeID() { return m_nodeId; }
+  Name
+  getNodeID()
+  {
+    return m_nodeId;
+  }
 
   friend ProcessNackTraits<KoNDNStrategy>;
 
- private:
+private:
   Name m_nodeId;
 };
 
-}  // namespace fw
-}  // namespace nfd
+} // namespace fw
+} // namespace nfd
 
-#endif  // NFD_DAEMON_FW_BEST_ROUTE_STRATEGY2_HPP
+#endif // NFD_DAEMON_FW_BEST_ROUTE_STRATEGY2_HPP

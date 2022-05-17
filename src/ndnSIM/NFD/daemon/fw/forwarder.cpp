@@ -119,13 +119,6 @@ Forwarder::onIncomingInterest(const FaceEndpoint& ingress, const Interest& inter
     return;
   }
 
-  // /localhost scope control
-  bool isLocalPacket = scope_prefix::LOCALHOST.isPrefixOf(interest.getName());
-  if (!isLocalPacket) {
-    NFD_LOG_DEBUG("Hola! " << interest.getName().toUri() << "(" << interest.getHashedName().toUri()
-                           << ")");
-  }
-
   // detect duplicate Nonce with Dead Nonce List
   bool hasDuplicateNonceInDnl =
     m_deadNonceList.has(Name(interest.getProtocolString() + interest.getName().toUri()),
@@ -165,7 +158,7 @@ Forwarder::onIncomingInterest(const FaceEndpoint& ingress, const Interest& inter
   }
 
   // is pending?
-  if (!pitEntry->hasInRecords()) {
+  if (!pitEntry->hasInRecordsWithProtocol(interest.getProtocol())) {
     string name = interest.getName().toUri();
     m_cs.find(interest, bind(&Forwarder::onContentStoreHit, this, ingress, pitEntry, _1, _2),
               bind(&Forwarder::onContentStoreMiss, this, ingress, pitEntry, _1));

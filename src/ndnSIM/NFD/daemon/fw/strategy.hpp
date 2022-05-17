@@ -34,8 +34,7 @@ namespace fw {
 
 /** \brief represents a forwarding strategy
  */
-class Strategy : noncopyable
-{
+class Strategy : noncopyable {
 public: // registry
   /** \brief register a strategy type
    *  \tparam S subclass of Strategy
@@ -43,7 +42,7 @@ public: // registry
    *  \note It is permitted to register the same strategy type under multiple names,
    *        which is useful in tests and for creating aliases.
    */
-  template<typename S>
+  template <typename S>
   static void
   registerType(const Name& strategyName = S::getStrategyName())
   {
@@ -51,7 +50,7 @@ public: // registry
     BOOST_ASSERT(strategyName.at(-1).isVersion());
     Registry& registry = getRegistry();
     BOOST_ASSERT(registry.count(strategyName) == 0);
-    registry[strategyName] = [] (auto&&... args) {
+    registry[strategyName] = [](auto&&... args) {
       return make_unique<S>(std::forward<decltype(args)>(args)...);
     };
   }
@@ -61,37 +60,31 @@ public: // registry
    *  \note This function finds a strategy type using same rules as \p create ,
    *        but does not attempt to construct an instance.
    */
-  static bool
-  canCreate(const Name& instanceName);
+  static bool canCreate(const Name& instanceName);
 
   /** \return a strategy instance created from \p instanceName
    *  \retval nullptr if !canCreate(instanceName)
    *  \throw std::invalid_argument strategy type constructor does not accept
    *                               specified version or parameters
    */
-  static unique_ptr<Strategy>
-  create(const Name& instanceName, Forwarder& forwarder);
+  static unique_ptr<Strategy> create(const Name& instanceName, Forwarder& forwarder);
 
   /** \return whether \p instanceNameA and \p instanceNameA will initiate same strategy type
    */
-  static bool
-  areSameType(const Name& instanceNameA, const Name& instanceNameB);
+  static bool areSameType(const Name& instanceNameA, const Name& instanceNameB);
 
   /** \return registered versioned strategy names
    */
-  static std::set<Name>
-  listRegistered();
+  static std::set<Name> listRegistered();
 
 public: // constructor, destructor, strategy info
   /** \brief Construct a strategy instance.
    *  \param forwarder a reference to the forwarder, used to enable actions and accessors.
    *  \note Strategy subclass constructor must not retain a reference to \p forwarder.
    */
-  explicit
-  Strategy(Forwarder& forwarder);
+  explicit Strategy(Forwarder& forwarder);
 
-  virtual
-  ~Strategy();
+  virtual ~Strategy();
 
 #ifdef DOXYGEN
   /** \return strategy program name
@@ -99,8 +92,7 @@ public: // constructor, destructor, strategy info
    *  The strategy name is defined by the strategy program.
    *  It must end with a version component.
    */
-  static const Name&
-  getStrategyName();
+  static const Name& getStrategyName();
 #endif
 
   /** \return strategy instance name
@@ -137,20 +129,19 @@ public: // triggers
    *  - If the strategy decides to forward this Interest,
    *    invoke \c sendInterest for each upstream, either now or shortly after via a scheduler event,
    *    but before PIT entry expires.
-   *    Optionally, the strategy can invoke \c setExpiryTimer to adjust how long it would wait for a response.
-   *  - If the strategy has already forwarded this Interest previously and decides to continue waiting,
-   *    do nothing.
-   *    Optionally, the strategy can invoke \c setExpiryTimer to adjust how long it would wait for a response.
+   *    Optionally, the strategy can invoke \c setExpiryTimer to adjust how long it would wait for a
+   * response.
+   *  - If the strategy has already forwarded this Interest previously and decides to continue
+   * waiting, do nothing. Optionally, the strategy can invoke \c setExpiryTimer to adjust how long
+   * it would wait for a response.
    *  - If the strategy concludes that this Interest cannot be satisfied,
    *    invoke \c rejectPendingInterest to erase the PIT entry.
    *
    *  \warning The strategy must not retain shared_ptr<pit::Entry>, otherwise undefined behavior
    *           may occur. However, the strategy is allowed to store weak_ptr<pit::Entry>.
    */
-  virtual void
-  afterReceiveInterest(const FaceEndpoint& ingress, const Interest& interest,
-                       const shared_ptr<pit::Entry>& pitEntry) = 0;
-
+  virtual void afterReceiveInterest(const FaceEndpoint& ingress, const Interest& interest,
+                                    const shared_ptr<pit::Entry>& pitEntry) = 0;
 
   /** \brief trigger after a looped Interest is received
    *
@@ -160,40 +151,38 @@ public: // triggers
    *  - cannot be satisfied by ContentStore
    *  - is under a namespace managed by this strategy
    */
-  virtual void
-  afterReceiveLoopedInterest(const FaceEndpoint& ingress, const Interest& interest,
-                             pit::Entry& pitEntry);
+  virtual void afterReceiveLoopedInterest(const FaceEndpoint& ingress, const Interest& interest,
+                                          pit::Entry& pitEntry);
 
   /** \brief trigger before PIT entry is satisfied
    *
    *  This trigger is invoked when an incoming Data satisfies more than one PIT entry.
    *  The strategy can collect measurements information, but cannot manipulate Data forwarding.
    *  When an incoming Data satisfies only one PIT entry, \c afterReceiveData is invoked instead
-   *  and given full control over Data forwarding. If a strategy does not override \c afterReceiveData,
-   *  the default implementation invokes \c beforeSatisfyInterest.
+   *  and given full control over Data forwarding. If a strategy does not override \c
+   * afterReceiveData, the default implementation invokes \c beforeSatisfyInterest.
    *
    *  Normally, PIT entries would be erased after receiving the first matching Data.
    *  If the strategy wishes to collect responses from additional upstream nodes,
    *  it should invoke \c setExpiryTimer within this function to prolong the PIT entry lifetime.
-   *  If a Data arrives from another upstream during the extended PIT entry lifetime, this trigger will be invoked again.
-   *  At that time, this function must invoke \c setExpiryTimer again to continue collecting more responses.
+   *  If a Data arrives from another upstream during the extended PIT entry lifetime, this trigger
+   * will be invoked again. At that time, this function must invoke \c setExpiryTimer again to
+   * continue collecting more responses.
    *
    *  In this base class this method does nothing.
    *
    *  \warning The strategy must not retain shared_ptr<pit::Entry>, otherwise undefined behavior
    *           may occur. However, the strategy is allowed to store weak_ptr<pit::Entry>.
    */
-  virtual void
-  beforeSatisfyInterest(const shared_ptr<pit::Entry>& pitEntry,
-                        const FaceEndpoint& ingress, const Data& data);
+  virtual void beforeSatisfyInterest(const shared_ptr<pit::Entry>& pitEntry,
+                                     const FaceEndpoint& ingress, const Data& data);
 
   /** \brief trigger after a Data is matched in CS
    *
    *  In the base class this method sends \p data to \p ingress
    */
-  virtual void
-  afterContentStoreHit(const shared_ptr<pit::Entry>& pitEntry,
-                       const FaceEndpoint& ingress, const Data& data);
+  virtual void afterContentStoreHit(const shared_ptr<pit::Entry>& pitEntry,
+                                    const FaceEndpoint& ingress, const Data& data);
 
   /** \brief trigger after Data is received
    *
@@ -208,8 +197,8 @@ public: // triggers
    *  - A strategy should return Data to downstream nodes via \c sendData or \c sendDataToAll.
    *  - A strategy can modify the Data as long as it still satisfies the PIT entry, such as
    *    adding or removing congestion marks.
-   *  - A strategy can delay Data forwarding by prolonging the PIT entry lifetime via \c setExpiryTimer,
-   *    and forward Data before the PIT entry is erased.
+   *  - A strategy can delay Data forwarding by prolonging the PIT entry lifetime via \c
+   * setExpiryTimer, and forward Data before the PIT entry is erased.
    *  - A strategy can collect measurements about the upstream.
    *  - A strategy can collect responses from additional upstream nodes by prolonging the PIT entry
    *    lifetime via \c setExpiryTimer every time a Data is received. Note that only one Data should
@@ -218,9 +207,8 @@ public: // triggers
    *  In the base class this method invokes \c beforeSatisfyInterest trigger and then returns
    *  the Data to downstream faces via \c sendDataToAll.
    */
-  virtual void
-  afterReceiveData(const shared_ptr<pit::Entry>& pitEntry,
-                   const FaceEndpoint& ingress, const Data& data);
+  virtual void afterReceiveData(const shared_ptr<pit::Entry>& pitEntry, const FaceEndpoint& ingress,
+                                const Data& data);
 
   /** \brief trigger after Nack is received
    *
@@ -235,32 +223,30 @@ public: // triggers
    *
    *  If the strategy wishes to collect responses from additional upstream nodes,
    *  it should invoke \c setExpiryTimer within this function to retain the PIT entry.
-   *  If a Nack arrives from another upstream during the extended PIT entry lifetime, this trigger will be invoked again.
-   *  At that time, this function must invoke \c setExpiryTimer again to continue collecting more responses.
+   *  If a Nack arrives from another upstream during the extended PIT entry lifetime, this trigger
+   * will be invoked again. At that time, this function must invoke \c setExpiryTimer again to
+   * continue collecting more responses.
    *
    *  In the base class this method does nothing.
    *
    *  \warning The strategy must not retain shared_ptr<pit::Entry>, otherwise undefined behavior
    *           may occur. However, the strategy is allowed to store weak_ptr<pit::Entry>.
    */
-  virtual void
-  afterReceiveNack(const FaceEndpoint& ingress, const lp::Nack& nack,
-                   const shared_ptr<pit::Entry>& pitEntry);
+  virtual void afterReceiveNack(const FaceEndpoint& ingress, const lp::Nack& nack,
+                                const shared_ptr<pit::Entry>& pitEntry);
 
   /** \brief trigger after Interest dropped for exceeding allowed retransmissions
    *
    *  In the base class this method does nothing.
    */
-  virtual void
-  onDroppedInterest(const FaceEndpoint& egress, const Interest& interest);
+  virtual void onDroppedInterest(const FaceEndpoint& egress, const Interest& interest);
 
   /** \brief trigger after new nexthop is added
    *
    *  The strategy should decide whether to send the buffered Interests to the new nexthop.
    *  In the base class, this method does nothing.
    */
-  virtual void
-  afterNewNextHop(const fib::NextHop& nextHop, const shared_ptr<pit::Entry>& pitEntry);
+  virtual void afterNewNextHop(const fib::NextHop& nextHop, const shared_ptr<pit::Entry>& pitEntry);
 
 protected: // actions
   /** \brief send Interest to egress
@@ -268,9 +254,8 @@ protected: // actions
    *  \param egress face through which to send out the Interest and destination endpoint
    *  \param interest the Interest packet
    */
-  VIRTUAL_WITH_TESTS void
-  sendInterest(const shared_ptr<pit::Entry>& pitEntry,
-               const FaceEndpoint& egress, const Interest& interest);
+  VIRTUAL_WITH_TESTS void sendInterest(const shared_ptr<pit::Entry>& pitEntry,
+                                       const FaceEndpoint& egress, const Interest& interest);
 
   /** \brief send \p data to \p egress
    *  \param pitEntry PIT entry
@@ -288,9 +273,8 @@ protected: // actions
    *  \param ingress face through which the Data comes from and endpoint of the sender
    *  \param data the Data packet
    */
-  VIRTUAL_WITH_TESTS void
-  sendDataToAll(const shared_ptr<pit::Entry>& pitEntry,
-                const FaceEndpoint& ingress, const Data& data);
+  VIRTUAL_WITH_TESTS void sendDataToAll(const shared_ptr<pit::Entry>& pitEntry,
+                                        const FaceEndpoint& ingress, const Data& data);
 
   /** \brief schedule the PIT entry for immediate deletion
    *
@@ -312,21 +296,19 @@ protected: // actions
    *  The egress must have a PIT in-record, otherwise this method has no effect.
    */
   VIRTUAL_WITH_TESTS void
-  sendNack(const shared_ptr<pit::Entry>& pitEntry,
-           const FaceEndpoint& egress, const lp::NackHeader& header)
+  sendNack(const shared_ptr<pit::Entry>& pitEntry, const FaceEndpoint& egress,
+           const lp::NackHeader& header)
   {
     m_forwarder.onOutgoingNack(pitEntry, egress, header);
   }
 
-  /** \brief send Nack to every face-endpoint pair that has an in-record, except those in \p exceptFaceEndpoints
-   *  \param pitEntry PIT entry
-   *  \param header NACK header
-   *  \param exceptFaceEndpoints list of face-endpoint pairs that should be excluded from sending Nacks
+  /** \brief send Nack to every face-endpoint pair that has an in-record, except those in \p
+   * exceptFaceEndpoints \param pitEntry PIT entry \param header NACK header \param
+   * exceptFaceEndpoints list of face-endpoint pairs that should be excluded from sending Nacks
    *  \note This is not an action, but a helper that invokes the sendNack action.
    */
-  void
-  sendNacks(const shared_ptr<pit::Entry>& pitEntry, const lp::NackHeader& header,
-            std::initializer_list<FaceEndpoint> exceptFaceEndpoints = {});
+  void sendNacks(const shared_ptr<pit::Entry>& pitEntry, const lp::NackHeader& header,
+                 std::initializer_list<FaceEndpoint> exceptFaceEndpoints = {});
 
   /** \brief Schedule the PIT entry to be erased after \p duration
    */
@@ -360,20 +342,24 @@ protected: // accessors
     return m_forwarder.m_faceTable;
   }
 
-protected: // instance name
-  struct ParsedInstanceName
+  Forwarder&
+  getForwarder() const
   {
-    Name strategyName; ///< strategy name without parameters
+    return m_forwarder;
+  }
+
+protected: // instance name
+  struct ParsedInstanceName {
+    Name strategyName;          ///< strategy name without parameters
     optional<uint64_t> version; ///< whether strategyName contains a version component
-    PartialName parameters; ///< parameter components
+    PartialName parameters;     ///< parameter components
   };
 
   /** \brief parse a strategy instance name
    *  \param input strategy instance name, may contain version and parameters
    *  \throw std::invalid_argument input format is unacceptable
    */
-  static ParsedInstanceName
-  parseInstanceName(const Name& input);
+  static ParsedInstanceName parseInstanceName(const Name& input);
 
   /** \brief construct a strategy instance name
    *  \param input strategy instance name, may contain version and parameters
@@ -385,8 +371,7 @@ protected: // instance name
    *  This allows a strategy instance to be constructed with an unversioned name,
    *  but its final instance name should contain the version.
    */
-  static Name
-  makeInstanceName(const Name& input, const Name& strategyName);
+  static Name makeInstanceName(const Name& input, const Name& strategyName);
 
   /** \brief set strategy instance name
    *  \note This must be called by strategy subclass constructor.
@@ -397,24 +382,24 @@ protected: // instance name
     m_name = name;
   }
 
-PUBLIC_WITH_TESTS_ELSE_PROTECTED: // setter
-  /** \brief set whether the afterNewNextHop trigger should be invoked for this strategy
-   */
-  void
-  enableNewNextHopTrigger(bool enabled)
+  PUBLIC_WITH_TESTS_ELSE_PROTECTED
+    : // setter
+      /** \brief set whether the afterNewNextHop trigger should be invoked for this strategy
+       */
+      void
+      enableNewNextHopTrigger(bool enabled)
   {
     m_wantNewNextHopTrigger = enabled;
   }
 
 private: // registry
-  typedef std::function<unique_ptr<Strategy>(Forwarder& forwarder, const Name& strategyName)> CreateFunc;
+  typedef std::function<unique_ptr<Strategy>(Forwarder& forwarder, const Name& strategyName)>
+    CreateFunc;
   typedef std::map<Name, CreateFunc> Registry; // indexed by strategy name
 
-  static Registry&
-  getRegistry();
+  static Registry& getRegistry();
 
-  static Registry::const_iterator
-  find(const Name& instanceName);
+  static Registry::const_iterator find(const Name& instanceName);
 
 protected: // accessors
   signal::Signal<FaceTable, Face>& afterAddFace;
@@ -441,14 +426,13 @@ private: // instance fields
  *
  *  This macro should appear once in .cpp of each strategy.
  */
-#define NFD_REGISTER_STRATEGY(S)                       \
-static class NfdAuto ## S ## StrategyRegistrationClass \
-{                                                      \
-public:                                                \
-  NfdAuto ## S ## StrategyRegistrationClass()          \
-  {                                                    \
-    ::nfd::fw::Strategy::registerType<S>();            \
-  }                                                    \
-} g_nfdAuto ## S ## StrategyRegistrationVariable
+#define NFD_REGISTER_STRATEGY(S)                                                                   \
+  static class NfdAuto##S##StrategyRegistrationClass {                                             \
+  public:                                                                                          \
+    NfdAuto##S##StrategyRegistrationClass()                                                        \
+    {                                                                                              \
+      ::nfd::fw::Strategy::registerType<S>();                                                      \
+    }                                                                                              \
+  } g_nfdAuto##S##StrategyRegistrationVariable
 
 #endif // NFD_DAEMON_FW_STRATEGY_HPP

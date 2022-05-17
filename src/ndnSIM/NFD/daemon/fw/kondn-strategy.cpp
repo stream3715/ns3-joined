@@ -102,14 +102,10 @@ KoNDNStrategy::afterReceiveInterest(const FaceEndpoint& ingress, const Interest&
 
         std::string agentNode = interest.getAgentNodeID().toUri();
 
-        const fib::Entry& newFibEntry = this->lookupFib(*pitEntry);
-        const fib::NextHopList& ndnNexthops = newFibEntry.getNextHops();
+        // PIT insert
+        shared_ptr<pit::Entry> pitEntryNdn = this->getForwarder().getPit().insert(interest).first;
 
-        it = std::find_if(ndnNexthops.begin(), ndnNexthops.end(), [&](const auto& nexthop) {
-          return isNextHopEligible(ingress.face, interest, nexthop, pitEntry, this->getNodeID());
-        });
-        auto egress = FaceEndpoint(it->getFace(), 0);
-        this->sendInterest(pitEntry, egress, interest);
+        this->sendInterest(pitEntryNdn, ingress, interest);
         return;
       }
       else if (protocol.toUri() == "/ndn") {

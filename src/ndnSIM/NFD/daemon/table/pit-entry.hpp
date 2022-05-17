@@ -55,11 +55,9 @@ typedef std::list<OutRecord> OutRecordCollection;
  *  In addition, the entry, in-records, and out-records are subclasses of StrategyInfoHost,
  *  which allows forwarding strategy to store arbitrary information on them.
  */
-class Entry : public StrategyInfoHost, noncopyable
-{
+class Entry : public StrategyInfoHost, noncopyable {
 public:
-  explicit
-  Entry(const Interest& interest);
+  explicit Entry(const Interest& interest);
 
   /** \return the representative Interest of the PIT entry
    *  \note Every Interest in in-records and out-records should have same Name and Selectors
@@ -84,8 +82,7 @@ public:
    *  \param interest the Interest
    *  \param nEqualNameComps number of initial name components guaranteed to be equal
    */
-  bool
-  canMatch(const Interest& interest, size_t nEqualNameComps = 0) const;
+  bool canMatch(const Interest& interest, size_t nEqualNameComps = 0) const;
 
 public: // in-record
   /** \return collection of in-records
@@ -105,6 +102,22 @@ public: // in-record
   hasInRecords() const
   {
     return !m_inRecords.empty();
+  }
+
+  /** \retval true There is at least one in-record.
+   *               This implies some downstream is waiting for Data or Nack.
+   *  \retval false There is no in-record.
+   *                This implies the entry is new or has been satisfied or Nacked.
+   */
+  bool
+  hasInRecordsWithProtocol(Name protocol) const
+  {
+    for (auto& e : m_inRecords) {
+      if (e.getProtocol().equals(protocol)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   InRecordCollection::iterator
@@ -134,24 +147,20 @@ public: // in-record
   /** \brief get the in-record for \p face
    *  \return an iterator to the in-record, or in_end() if it does not exist
    */
-  InRecordCollection::iterator
-  getInRecord(const Face& face);
+  InRecordCollection::iterator getInRecord(const Face& face);
 
   /** \brief insert or update an in-record
    *  \return an iterator to the new or updated in-record
    */
-  InRecordCollection::iterator
-  insertOrUpdateInRecord(Face& face, const Interest& interest);
+  InRecordCollection::iterator insertOrUpdateInRecord(Face& face, const Interest& interest);
 
   /** \brief delete the in-record for \p face if it exists
    */
-  void
-  deleteInRecord(const Face& face);
+  void deleteInRecord(const Face& face);
 
   /** \brief delete all in-records
    */
-  void
-  clearInRecords();
+  void clearInRecords();
 
 public: // out-record
   /** \return collection of in-records
@@ -201,19 +210,16 @@ public: // out-record
   /** \brief get the out-record for \p face
    *  \return an iterator to the out-record, or out_end() if it does not exist
    */
-  OutRecordCollection::iterator
-  getOutRecord(const Face& face);
+  OutRecordCollection::iterator getOutRecord(const Face& face);
 
   /** \brief insert or update an out-record
    *  \return an iterator to the new or updated out-record
    */
-  OutRecordCollection::iterator
-  insertOrUpdateOutRecord(Face& face, const Interest& interest);
+  OutRecordCollection::iterator insertOrUpdateOutRecord(Face& face, const Interest& interest);
 
   /** \brief delete the out-record for \p face if it exists
    */
-  void
-  deleteOutRecord(const Face& face);
+  void deleteOutRecord(const Face& face);
 
 public:
   /** \brief Expiry timer
