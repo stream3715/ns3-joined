@@ -207,6 +207,16 @@ Hashtable::findOrInsert(const Name& name, size_t prefixLen, HashValue h, bool al
   return {node, true};
 }
 
+struct Hashtable::cmpXor {
+  bool
+  operator()(std::pair<std::vector<int>, const Node*> a,
+             std::pair<std::vector<int>, const Node*> b) const
+  {
+    return std::lexicographical_compare(a.first.begin(), a.first.end(), b.first.begin(),
+                                        b.first.end());
+  }
+};
+
 std::pair<const Node*, bool>
 Hashtable::findOrInsertByID(const Name& contentName, HashValue h, std::string currentId,
                             bool allowInsert)
@@ -225,11 +235,13 @@ Hashtable::findOrInsertByID(const Name& contentName, HashValue h, std::string cu
   const std::vector<int> contentHash = decode(contentString);
   const std::vector<int> currentHash = decode(currentId);
 
-  std::vector<int> minimumDistance(40);
-  std::transform(currentHash.begin(), currentHash.end(), contentHash.begin(),
-                 minimumDistance.begin(), std::bit_xor<int>{});
+  std::vector<std::pair<std::vector<int>, const Node*>> nextHopList;
 
-  const Node* nearestPtr = 0;
+  std::vector<int> tmp(40);
+  std::transform(currentHash.begin(), currentHash.end(), contentHash.begin(), tmp.begin(),
+                 std::bit_xor<int>{});
+
+  nextHopList.push_back({tmp, 0});
 
   for (auto it = m_buckets.begin(), e = m_buckets.end(); it != e; ++it) {
     const Node* node = *it;
@@ -246,15 +258,13 @@ Hashtable::findOrInsertByID(const Name& contentName, HashValue h, std::string cu
 
     std::transform(nextNodeId.begin(), nextNodeId.end(), contentHash.begin(),
                    nextNodeDistance.begin(), std::bit_xor<int>{});
-
-    if (std::lexicographical_compare(nextNodeDistance.begin(), nextNodeDistance.end(),
-                                     minimumDistance.begin(), minimumDistance.end())) {
-      minimumDistance = std::vector<int>(nextNodeDistance.begin(), nextNodeDistance.end());
-      nearestPtr = node;
-    }
+    nextHopList.push_back(
+      {std::vector<int>(nextNodeDistance.begin(), nextNodeDistance.end()), node});
   }
 
-  const Node* returnNode = nearestPtr;
+  sort(nextHopList.begin(), nextHopList.end(), cmpXor());
+
+  const Node* returnNode = nextHopList.front().second;
   // const Node* node = m_buckets[bucket];
 
   if (returnNode) {
@@ -266,11 +276,82 @@ Hashtable::findOrInsertByID(const Name& contentName, HashValue h, std::string cu
   }
 }
 
+std::pair<const std::vector<const Node*>, bool>
+Hashtable::findOrInsertByIDList(const Name& contentName, HashValue h, std::string currentId,
+                                bool allowInsert)
+{
+  NFD_LOG_DEBUG("find next hop for " << contentName << " on " << currentId);
+  auto decode = [](std::string hash) {
+    std::vector<int> decoded;
+    for (auto it = hash.begin(), e = hash.end(); it != e; ++it) {
+      decoded.push_back(std::stoi(std::string(1, *it), nullptr, 16));
+    }
+    return decoded;
+  };
+
+  std::string contentString = contentName.toUri().substr(1);
+
+  const std::vector<int> contentHash = decode(contentString);
+  const std::vector<int> currentHash = decode(currentId);
+
+  std::vector<std::pair<std::vector<int>, const Node*>> nextHopList;
+
+  std::vector<int> tmp(40);
+  std::transform(currentHash.begin(), currentHash.end(), contentHash.begin(), tmp.begin(),
+                 std::bit_xor<int>{});
+
+  nextHopList.push_back({tmp, 0});
+
+  for (auto it = m_buckets.begin(), e = m_buckets.end(); it != e; ++it) {
+    const Node* node = *it;
+    if (node == nullptr) {
+      continue;
+    }
+
+    std::string nodeIdString = node->entry.getName().toUri().substr(1);
+    if (!nodeIdString.size() || nodeIdString.size() != 40) {
+      continue;
+    }
+    const std::vector<int> nextNodeId = decode(nodeIdString);
+    std::array<int, 40> nextNodeDistance = {0};
+
+    std::transform(nextNodeId.begin(), nextNodeId.end(), contentHash.begin(),
+                   nextNodeDistance.begin(), std::bit_xor<int>{});
+    nextHopList.push_back(
+      {std::vector<int>(nextNodeDistance.begin(), nextNodeDistance.end()), node});
+  }
+
+  sort(nextHopList.begin(), nextHopList.end(), cmpXor());
+
+  // const Node* node = m_buckets[bucket];
+
+  std::vector<const Node*> retList;
+
+  if (nextHopList.front().second) {
+    for_each(nextHopList.begin(), nextHopList.end(),
+             [&](std::pair<std::vector<int>, const nfd::name_tree::Node*> entry) {
+               retList.push_back(entry.second);
+             });
+    return {retList, false};
+  }
+  else {
+    NFD_LOG_TRACE("valid node not-found");
+    return {retList, false};
+  }
+}
+
 const Node*
 Hashtable::findByID(const Name& name, std::string currentId) const
 {
   HashValue h = computeHash(name, name.size());
   return const_cast<Hashtable*>(this)->findOrInsertByID(name, h, currentId, false).first;
+}
+
+const std::vector<const Node*>
+Hashtable::findByIDList(const Name& name, std::string currentId) const
+{
+  HashValue h = computeHash(name, name.size());
+  return const_cast<Hashtable*>(this)->findOrInsertByIDList(name, h, currentId, false).first;
 }
 
 const Node*

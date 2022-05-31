@@ -189,6 +189,11 @@ public:
    */
   const Node* findByID(const Name& name, std::string currentId) const;
 
+  /** \brief find node for ID
+   *  \pre name
+   */
+  const std::vector<const Node*> findByIDList(const Name& name, std::string currentId) const;
+
   /** \brief find node for name.getPrefix(prefixLen)
    *  \pre name.size() > prefixLen
    */
@@ -223,7 +228,11 @@ private:
 
   std::pair<const Node*, bool>
   findOrInsert(const Name& name, size_t prefixLen, HashValue h, bool allowInsert);
-  std::pair<const Node*, bool> findOrInsertByID(const Name& name, HashValue h, std::string currentId, bool allowInsert);
+  std::pair<const Node*, bool>
+  findOrInsertByID(const Name& name, HashValue h, std::string currentId, bool allowInsert);
+  std::pair<const std::vector<const Node*>, bool>
+  findOrInsertByIDList(const Name& name, HashValue h, std::string currentId, bool allowInsert);
+  struct cmpXor;
 
   void computeThresholds();
 
