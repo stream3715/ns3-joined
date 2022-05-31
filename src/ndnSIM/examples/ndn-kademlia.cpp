@@ -95,8 +95,8 @@ main(int argc, char* argv[])
      "976953572c8f4e8dbd433ff7be26db3c00000000", "eeeb96fddd864b7c9ef37fc80a6c510c00000000",
      "20f167f318fb4e59b0be12aa935ecaf200000000"};
 
-  int len = array.size();
   /**
+  int len = array.size();
   uint32_t nodeCount = 3;
   clx::sha1 hash;
   for (uint32_t i = 0; i < nodeCount; i++)
@@ -127,7 +127,7 @@ main(int argc, char* argv[])
   // Installing applications
 
   // Producer
-  Ptr<Node> producerMain = Names::Find<Node>("rtr-35");
+  Ptr<Node> producerMain = Names::Find<Node>("rtr-5");
 
   ndn::AppHelper producerHelper("ns3::ndn::Producer");
   producerHelper.SetAttribute("PayloadSize", StringValue("1024"));
@@ -139,7 +139,6 @@ main(int argc, char* argv[])
   NodeContainer majorConsumerNodes;
 
   majorConsumerNodes.Add(Names::Find<Node>("rtr-1"));
-  /*
   majorConsumerNodes.Add(Names::Find<Node>("rtr-2"));
   majorConsumerNodes.Add(Names::Find<Node>("rtr-3"));
   majorConsumerNodes.Add(Names::Find<Node>("rtr-4"));
@@ -172,24 +171,25 @@ main(int argc, char* argv[])
   majorConsumerNodes.Add(Names::Find<Node>("rtr-32"));
   majorConsumerNodes.Add(Names::Find<Node>("rtr-33"));
   majorConsumerNodes.Add(Names::Find<Node>("rtr-34"));
-  majorConsumerNodes.Add(Names::Find<Node>("rtr-35"));
+  // majorConsumerNodes.Add(Names::Find<Node>("rtr-35"));
   majorConsumerNodes.Add(Names::Find<Node>("rtr-36"));
   majorConsumerNodes.Add(Names::Find<Node>("rtr-37"));
-  */
 
   ndn::AppHelper majorConsumerHelper("ns3::ndn::ConsumerZipfMandelbrot");
   majorConsumerHelper.SetPrefix(prefix + "/major");
   majorConsumerHelper.SetAttribute("Frequency", StringValue("100")); // 100 interests a second
   majorConsumerHelper.Install(majorConsumerNodes);
-/*
+
   NodeContainer minorConsumerNodes;
+  minorConsumerNodes.Add(Names::Find<Node>("rtr-10"));
+  minorConsumerNodes.Add(Names::Find<Node>("rtr-21"));
   minorConsumerNodes.Add(Names::Find<Node>("rtr-27"));
 
   ndn::AppHelper minorConsumerHelper("ns3::ndn::ConsumerZipfMandelbrot");
   minorConsumerHelper.SetPrefix(prefix + "/minor");
   minorConsumerHelper.SetAttribute("Frequency", StringValue("1"));
   minorConsumerHelper.Install(minorConsumerNodes);
-*/
+
   // Add Kademlia Based Routes to Node
   for (const auto& e : array | boost::adaptors::indexed()) {
     auto index = e.index();
@@ -200,7 +200,7 @@ main(int argc, char* argv[])
   // Calculate and install FIBs
   GlobalRoutingHelper::CalculateRoutes();
 
-  Simulator::Stop(Seconds(10.0));
+  Simulator::Stop(Seconds(30.0));
 
   ndn::L3RateTracer::InstallAll("rate-trace.tsv", Seconds(0.5));
   L2RateTracer::InstallAll("drop-trace.tsv", Seconds(0.5));
