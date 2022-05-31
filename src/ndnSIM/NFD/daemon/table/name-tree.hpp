@@ -151,8 +151,16 @@ public: // matching
    * entrySelector, where no other entry with a longer name satisfies those
    * requirements; or nullptr if no entry satisfying those requirements exists
    */
-  Entry* findLongestIDMatch(const Name& name, std::string currentNode, const EntrySelector& entrySelector = AnyEntry()
-                            ) const;
+  Entry* findLongestIDMatch(const Name& name, std::string currentNode,
+                            const EntrySelector& entrySelector = AnyEntry()) const;
+
+  /** \brief Longest prefix matching
+   *  \return entry list whose name is a prefix of \p name and passes \p
+   * entrySelector, where no other entry with a longer name satisfies those
+   * requirements; or nullptr if no entry satisfying those requirements exists
+   */
+  std::vector<Entry*> findLongestIDMatchList(const Name& name, std::string currentNode,
+                            const EntrySelector& entrySelector = AnyEntry()) const;
 
   /** \brief Exact match lookup
    *  \return entry with \c name.getPrefix(prefixLen), or nullptr if it does not

@@ -180,6 +180,24 @@ NameTree::findLongestIDMatch(const Name& name, std::string currentNode,
   return nullptr;
 }
 
+std::vector<Entry*>
+NameTree::findLongestIDMatchList(const Name& name, std::string currentNode,
+                                 const EntrySelector& entrySelector) const
+{
+  std::vector<Entry*> entries;
+  std::vector<const Node*> nodes = m_ht.findByIDList(name, currentNode);
+  if (nodes.front() != nullptr && entrySelector(nodes.front()->entry)) {
+    NFD_LOG_DEBUG("Kademlia-like Match " << nodes.front()->entry.getName().toUri());
+    for_each(nodes.begin(), nodes.end(),
+             [&](const nfd::name_tree::Node* node) { entries.push_back(&node->entry); });
+  }
+  else {
+    entries.push_back(nullptr);
+  }
+
+  return entries;
+}
+
 Entry*
 NameTree::findLongestPrefixMatch(const Name& name, const EntrySelector& entrySelector) const
 {
