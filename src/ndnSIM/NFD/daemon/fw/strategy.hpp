@@ -323,6 +323,7 @@ protected: // accessors
    */
   const fib::Entry& lookupFib(const pit::Entry& pitEntry) const;
   const fib::Entry& lookupFib(const pit::Entry& pitEntry, std::string currentId) const;
+  const std::vector<const fib::Entry*> lookupFibList(const pit::Entry& pitEntry, std::string currentId) const;
 
   MeasurementsAccessor&
   getMeasurements()

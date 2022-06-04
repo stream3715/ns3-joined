@@ -336,6 +336,7 @@ Hashtable::findOrInsertByIDList(const Name& contentName, HashValue h, std::strin
   }
   else {
     NFD_LOG_TRACE("valid node not-found");
+    retList.push_back(nullptr);
     return {retList, false};
   }
 }

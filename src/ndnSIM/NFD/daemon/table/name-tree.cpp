@@ -186,10 +186,16 @@ NameTree::findLongestIDMatchList(const Name& name, std::string currentNode,
 {
   std::vector<Entry*> entries;
   std::vector<const Node*> nodes = m_ht.findByIDList(name, currentNode);
+
   if (nodes.front() != nullptr && entrySelector(nodes.front()->entry)) {
     NFD_LOG_DEBUG("Kademlia-like Match " << nodes.front()->entry.getName().toUri());
-    for_each(nodes.begin(), nodes.end(),
-             [&](const nfd::name_tree::Node* node) { entries.push_back(&node->entry); });
+    for (int i = 0;
+         static_cast<std::vector<const nfd::name_tree::Node*>::size_type>(i) < nodes.size(); i++) {
+      if (nodes.at(i) == nullptr) {
+        return entries;
+      }
+      entries.push_back(&(nodes.at(i))->entry);
+    }
   }
   else {
     entries.push_back(nullptr);

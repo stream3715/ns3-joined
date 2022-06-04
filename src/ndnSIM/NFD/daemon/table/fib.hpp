@@ -54,10 +54,17 @@ public:
     return m_nItems;
   }
 
-public: // lookup
-        /** \brief Performs a longest prefix match
-         */
+public:
+  // lookup
+
+  /** \brief Performs a longest prefix match
+   */
   const Entry& findLongestIDMatch(const Name& prefix, std::string currentNode) const;
+
+  /** \brief Performs a longest prefix match list
+   */
+  const std::vector<const Entry*> findLongestIDMatchList(const Name& prefix, std::string currentNode) const;
+
   /** \brief Performs a longest prefix match
    */
   const Entry& findLongestPrefixMatch(const Name& prefix) const;

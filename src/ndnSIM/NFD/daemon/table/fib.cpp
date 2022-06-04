@@ -69,6 +69,23 @@ Fib::findLongestIDMatch(const Name& id, std::string currentNode) const
   return *s_emptyEntry;
 }
 
+const std::vector<const Entry*>
+Fib::findLongestIDMatchList(const Name& id, std::string currentNode) const
+{
+  std::vector<name_tree::Entry*> nteList =
+    m_nameTree.findLongestIDMatchList(id, currentNode, &nteHasFibEntry);
+  std::vector<const Entry*> ret;
+
+  if (nteList.front() != nullptr) {
+    for_each(nteList.begin(), nteList.end(),
+             [&](name_tree::Entry* e) { ret.push_back(e->getFibEntry()); });
+  }
+  else {
+    // ret.push_back(*s_emptyEntry);
+  }
+  return ret;
+}
+
 const Entry&
 Fib::findLongestPrefixMatch(const Name& prefix) const
 {

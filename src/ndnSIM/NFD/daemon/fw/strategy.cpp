@@ -380,5 +380,61 @@ Strategy::lookupFib(const pit::Entry& pitEntry, std::string currentId) const
   return *fibEntry; // only occurs if no delegation finds a FIB nexthop
 }
 
+const vector<const fib::Entry*>
+Strategy::lookupFibList(const pit::Entry& pitEntry, std::string currentId) const
+{
+  const Fib& fib = m_forwarder.getFib();
+
+  const Interest& interest = pitEntry.getInterest();
+  const std::string koNndProtocol = interest.getProtocol().toUri();
+
+  // has forwarding hint?
+  if (interest.getForwardingHint().empty()) {
+    if (koNndProtocol == "/kademlia") {
+      vector<const fib::Entry*> fibEntry =
+        fib.findLongestIDMatchList(interest.getHashedName(), currentId);
+      // const fib::Entry& fibEntry = fib.findLongestPrefixMatch(pitEntry);
+      NFD_LOG_TRACE("lookupFib noForwardingHint found=" << fibEntry.front()->getPrefix());
+      return fibEntry;
+    }
+    else {
+      // FIB lookup with Interest name
+      const fib::Entry& fibEntry = fib.findLongestPrefixMatch(pitEntry);
+      NFD_LOG_TRACE("lookupFib noForwardingHint found=" << fibEntry.getPrefix());
+      vector<const fib::Entry*> fibEntries;
+      fibEntries.push_back(&fibEntry);
+      return fibEntries;
+    }
+  }
+
+  vector<const fib::Entry*> fibEntries;
+
+  const DelegationList& fh = interest.getForwardingHint();
+  // Forwarding hint should have been stripped by incoming Interest pipeline
+  // when reaching producer region
+  BOOST_ASSERT(!m_forwarder.getNetworkRegionTable().isInProducerRegion(fh));
+
+  const fib::Entry* fibEntry = nullptr;
+  for (const Delegation& del : fh) {
+    fibEntry = &fib.findLongestPrefixMatch(del.name);
+    if (fibEntry->hasNextHops()) {
+      if (fibEntry->getPrefix().size() == 0) {
+        // in consumer region, return the default route
+        NFD_LOG_TRACE("lookupFib inConsumerRegion found=" << fibEntry->getPrefix());
+      }
+      else {
+        // in default-free zone, use the first delegation that finds a FIB entry
+        NFD_LOG_TRACE("lookupFib delegation=" << del.name << " found=" << fibEntry->getPrefix());
+      }
+      fibEntries.push_back(fibEntry);
+      return fibEntries;
+    }
+    BOOST_ASSERT(fibEntry->getPrefix().size() == 0); // only ndn:/ FIB entry can have zero nexthop
+  }
+  BOOST_ASSERT(fibEntry != nullptr && fibEntry->getPrefix().size() == 0);
+  fibEntries.push_back(nullptr);
+  return fibEntries; // only occurs if no delegation finds a FIB nexthop
+}
+
 } // namespace fw
 } // namespace nfd
