@@ -88,5 +88,6 @@ massif.*
 configure
 toggle
 *.tsv
+*.csv
 log.txt
 err.txt
