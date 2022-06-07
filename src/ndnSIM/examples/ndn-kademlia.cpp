@@ -33,7 +33,6 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
-#include <clx/sha1.h>
 namespace ns3 {
 
 /**
@@ -181,9 +180,9 @@ main(int argc, char* argv[])
   majorConsumerHelper.Install(majorConsumerNodes);
 
   NodeContainer minorConsumerNodes;
-  minorConsumerNodes.Add(Names::Find<Node>("rtr-10"));
-  minorConsumerNodes.Add(Names::Find<Node>("rtr-21"));
-  minorConsumerNodes.Add(Names::Find<Node>("rtr-27"));
+  minorConsumerNodes.Add(Names::Find<Node>("rtr-1"));
+  minorConsumerNodes.Add(Names::Find<Node>("rtr-8"));
+  minorConsumerNodes.Add(Names::Find<Node>("rtr-9"));
 
   ndn::AppHelper minorConsumerHelper("ns3::ndn::ConsumerZipfMandelbrot");
   minorConsumerHelper.SetPrefix(prefix + "/minor");
