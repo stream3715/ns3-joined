@@ -97,7 +97,6 @@ main(int argc, char* argv[])
   /**
   int len = array.size();
   uint32_t nodeCount = 3;
-  clx::sha1 hash;
   for (uint32_t i = 0; i < nodeCount; i++)
     {
       const uuid id = random_generator () ();
@@ -126,7 +125,7 @@ main(int argc, char* argv[])
   // Installing applications
 
   // Producer
-  Ptr<Node> producerMain = Names::Find<Node>("rtr-5");
+  Ptr<Node> producerMain = Names::Find<Node>("rtr-35");
 
   ndn::AppHelper producerHelper("ns3::ndn::Producer");
   producerHelper.SetAttribute("PayloadSize", StringValue("1024"));
@@ -141,7 +140,7 @@ main(int argc, char* argv[])
   majorConsumerNodes.Add(Names::Find<Node>("rtr-2"));
   majorConsumerNodes.Add(Names::Find<Node>("rtr-3"));
   majorConsumerNodes.Add(Names::Find<Node>("rtr-4"));
-  // majorConsumerNodes.Add(Names::Find<Node>("rtr-5"));
+  majorConsumerNodes.Add(Names::Find<Node>("rtr-5"));
   majorConsumerNodes.Add(Names::Find<Node>("rtr-6"));
   majorConsumerNodes.Add(Names::Find<Node>("rtr-7"));
   majorConsumerNodes.Add(Names::Find<Node>("rtr-8"));
@@ -170,7 +169,7 @@ main(int argc, char* argv[])
   majorConsumerNodes.Add(Names::Find<Node>("rtr-32"));
   majorConsumerNodes.Add(Names::Find<Node>("rtr-33"));
   majorConsumerNodes.Add(Names::Find<Node>("rtr-34"));
-  majorConsumerNodes.Add(Names::Find<Node>("rtr-35"));
+  // majorConsumerNodes.Add(Names::Find<Node>("rtr-35"));
   majorConsumerNodes.Add(Names::Find<Node>("rtr-36"));
   majorConsumerNodes.Add(Names::Find<Node>("rtr-37"));
 
@@ -180,10 +179,22 @@ main(int argc, char* argv[])
   majorConsumerHelper.Install(majorConsumerNodes);
 
   NodeContainer minorConsumerNodes;
-  minorConsumerNodes.Add(Names::Find<Node>("rtr-1"));
-  minorConsumerNodes.Add(Names::Find<Node>("rtr-8"));
-  minorConsumerNodes.Add(Names::Find<Node>("rtr-9"));
 
+  /*
+    minorConsumerNodes.Add(Names::Find<Node>("rtr-1"));
+    minorConsumerNodes.Add(Names::Find<Node>("rtr-8"));
+    minorConsumerNodes.Add(Names::Find<Node>("rtr-9"));
+  */
+
+  minorConsumerNodes.Add(Names::Find<Node>("rtr-10"));
+  minorConsumerNodes.Add(Names::Find<Node>("rtr-21"));
+  minorConsumerNodes.Add(Names::Find<Node>("rtr-27"));
+
+  /*
+  minorConsumerNodes.Add(Names::Find<Node>("rtr-16"));
+  minorConsumerNodes.Add(Names::Find<Node>("rtr-28"));
+  minorConsumerNodes.Add(Names::Find<Node>("rtr-34"));
+*/
   ndn::AppHelper minorConsumerHelper("ns3::ndn::ConsumerZipfMandelbrot");
   minorConsumerHelper.SetPrefix(prefix + "/minor");
   minorConsumerHelper.SetAttribute("Frequency", StringValue("1"));

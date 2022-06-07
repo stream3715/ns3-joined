@@ -25,8 +25,6 @@
 
 #include "forwarder.hpp"
 
-#include <clx/sha1.h>
-
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
@@ -160,8 +158,12 @@ Forwarder::onIncomingInterest(const FaceEndpoint& ingress, const Interest& inter
   // is pending?
   if (!pitEntry->hasInRecordsWithProtocol(interest.getProtocol())) {
     string name = interest.getName().toUri();
-    m_cs.find(interest, bind(&Forwarder::onContentStoreHit, this, ingress, pitEntry, _1, _2),
-              bind(&Forwarder::onContentStoreMiss, this, ingress, pitEntry, _1));
+    string id = this->getNodeId().toUri();
+    if (id == "/976953572c8f4e8dbd433ff7be26db3c00000000") {
+      std::cout << endl;
+    }
+      m_cs.find(interest, bind(&Forwarder::onContentStoreHit, this, ingress, pitEntry, _1, _2),
+                bind(&Forwarder::onContentStoreMiss, this, ingress, pitEntry, _1));
   }
   else {
     this->onContentStoreMiss(ingress, pitEntry, interest);
