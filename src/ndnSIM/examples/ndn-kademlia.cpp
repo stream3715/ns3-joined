@@ -137,6 +137,7 @@ main(int argc, char* argv[])
   NodeContainer majorConsumerNodes;
 
   majorConsumerNodes.Add(Names::Find<Node>("rtr-1"));
+  /*
   majorConsumerNodes.Add(Names::Find<Node>("rtr-2"));
   majorConsumerNodes.Add(Names::Find<Node>("rtr-3"));
   majorConsumerNodes.Add(Names::Find<Node>("rtr-4"));
@@ -169,9 +170,12 @@ main(int argc, char* argv[])
   majorConsumerNodes.Add(Names::Find<Node>("rtr-32"));
   majorConsumerNodes.Add(Names::Find<Node>("rtr-33"));
   majorConsumerNodes.Add(Names::Find<Node>("rtr-34"));
+  */
   // majorConsumerNodes.Add(Names::Find<Node>("rtr-35"));
+  /*
   majorConsumerNodes.Add(Names::Find<Node>("rtr-36"));
   majorConsumerNodes.Add(Names::Find<Node>("rtr-37"));
+  */
 
   ndn::AppHelper majorConsumerHelper("ns3::ndn::ConsumerZipfMandelbrot");
   majorConsumerHelper.SetPrefix(prefix + "/major");
@@ -187,8 +191,10 @@ main(int argc, char* argv[])
   */
 
   minorConsumerNodes.Add(Names::Find<Node>("rtr-10"));
-  minorConsumerNodes.Add(Names::Find<Node>("rtr-21"));
-  minorConsumerNodes.Add(Names::Find<Node>("rtr-27"));
+  /*
+   minorConsumerNodes.Add(Names::Find<Node>("rtr-21"));
+   minorConsumerNodes.Add(Names::Find<Node>("rtr-27"));
+  */
 
   /*
   minorConsumerNodes.Add(Names::Find<Node>("rtr-16"));
@@ -210,7 +216,7 @@ main(int argc, char* argv[])
   // Calculate and install FIBs
   GlobalRoutingHelper::CalculateRoutes();
 
-  Simulator::Stop(Seconds(30.0));
+  Simulator::Stop(Seconds(1.0));
 
   ndn::L3RateTracer::InstallAll("rate-trace.tsv", Seconds(0.5));
   L2RateTracer::InstallAll("drop-trace.tsv", Seconds(0.5));
