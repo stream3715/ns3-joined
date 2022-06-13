@@ -77,93 +77,38 @@ KoNDNStrategy::afterReceiveInterest(const FaceEndpoint& ingress, const Interest&
   NFD_LOG_DEBUG(interest << " name: " << interest.getName().toUri()
                          << " hash: " << interest.getHashedName().toUri());
 
-  if (protocol.toUri() == "/kademlia") {
-    std::vector<const nfd::fib::Entry*> fibEntries =
-      this->lookupFibList(*pitEntry, this->getNodeID().toUri().substr(1));
+  const fib::Entry& fibEntry = this->lookupFib(*pitEntry, this->getNodeID().toUri().substr(1));
+  const fib::NextHopList& nexthops = fibEntry.getNextHops();
+  auto it = nexthops.end();
 
-    const nfd::fib::Entry& fibEntryOriginal =
-      this->lookupFib(*pitEntry, this->getNodeID().toUri().substr(1));
+  if (suppression == RetxSuppressionResult::NEW) {
+    // forward to nexthop with lowest cost except downstream
+    it = std::find_if(nexthops.begin(), nexthops.end(), [&](const auto& nexthop) {
+      return isNextHopEligible(ingress.face, interest, nexthop, pitEntry);
+    });
 
-    for (int i = 0; i < 1; i++) {
-      if (static_cast<std::vector<int>::size_type>(i) >= fibEntries.size()) {
+    if (it == nexthops.end()) {
+      NFD_LOG_DEBUG(interest << " from=" << ingress << " noNextHop");
+      if (protocol.toUri() == "/kademlia") {
+        // std::cout << "********** SWITCH TO NDN ROUTING **********\n";
+
+        const ndn::time::system_clock::TimePoint now = time::system_clock::now();
+        std::cout << time::toUnixTimestamp(now) << ",AN,"
+                  << "CURR_NODE: " << m_nodeId.toUri() << " INAME: " << interest.getName().toUri()
+                  << std::endl;
+
+        interest.setProtocol("ndn");
+        interest.setAgentNodeID(this->getNodeID());
+
+        std::string agentNode = interest.getAgentNodeID().toUri();
+
+        // PIT insert
+        shared_ptr<pit::Entry> pitEntryNdn = this->getForwarder().getPit().insert(interest).first;
+
+        this->sendInterest(pitEntryNdn, ingress, interest);
         return;
       }
-      const nfd::fib::Entry* fibEntry = fibEntries.at(i);
-      const fib::NextHopList& nexthops = fibEntry->getNextHops();
-      auto it = nexthops.end();
-
-      if (suppression == RetxSuppressionResult::NEW) {
-        // forward to nexthop with lowest cost except downstream
-        it = std::find_if(nexthops.begin(), nexthops.end(), [&](const auto& nexthop) {
-          return isNextHopEligible(ingress.face, interest, nexthop, pitEntry);
-        });
-
-        if (it == nexthops.end()) {
-          NFD_LOG_DEBUG(interest << " from=" << ingress << " noNextHop");
-          // std::cout << "********** SWITCH TO NDN ROUTING **********\n";
-
-          const ndn::time::system_clock::TimePoint now = time::system_clock::now();
-          std::cout << time::toUnixTimestamp(now) << ",AN,"
-                    << "CURR_NODE: " << m_nodeId.toUri() << " INAME: " << interest.getName().toUri()
-                    << std::endl;
-
-          interest.setProtocol("ndn");
-          interest.setAgentNodeID(this->getNodeID());
-
-          std::string agentNode = interest.getAgentNodeID().toUri();
-
-          // PIT insert
-          shared_ptr<pit::Entry> pitEntryNdn = this->getForwarder().getPit().insert(interest).first;
-
-          this->sendInterest(pitEntryNdn, ingress, interest);
-          return;
-        }
-
-        auto egress = FaceEndpoint(it->getFace(), 0);
-        NFD_LOG_DEBUG(interest << " from=" << ingress << " newPitEntry-to=" << egress);
-        this->sendInterest(pitEntry, egress, interest);
-        continue;
-      }
-
-      // find an unused upstream with lowest cost except downstream
-      it = std::find_if(nexthops.begin(), nexthops.end(), [&](const auto& nexthop) {
-        return isNextHopEligible(ingress.face, interest, nexthop, pitEntry, true,
-                                 time::steady_clock::now());
-      });
-
-      if (it != nexthops.end()) {
-        auto egress = FaceEndpoint(it->getFace(), 0);
-        this->sendInterest(pitEntry, egress, interest);
-        NFD_LOG_DEBUG(interest << " from=" << ingress << " retransmit-unused-to=" << egress);
-        continue;
-      }
-
-      // find an eligible upstream that is used earliest
-      it = findEligibleNextHopWithEarliestOutRecord(ingress.face, interest, nexthops, pitEntry);
-      if (it == nexthops.end()) {
-        NFD_LOG_DEBUG(interest << " from=" << ingress << " retransmitNoNextHop");
-      }
-      else {
-        auto egress = FaceEndpoint(it->getFace(), 0);
-        this->sendInterest(pitEntry, egress, interest);
-        NFD_LOG_DEBUG(interest << " from=" << ingress << " retransmit-retry-to=" << egress);
-      }
-    }
-  }
-  else {
-    const fib::Entry& fibEntry = this->lookupFib(*pitEntry);
-    const fib::NextHopList& nexthops = fibEntry.getNextHops();
-    auto it = nexthops.end();
-
-    if (suppression == RetxSuppressionResult::NEW) {
-      // forward to nexthop with lowest cost except downstream
-      it = std::find_if(nexthops.begin(), nexthops.end(), [&](const auto& nexthop) {
-        return isNextHopEligible(ingress.face, interest, nexthop, pitEntry);
-      });
-
-      if (it == nexthops.end()) {
-        NFD_LOG_DEBUG(interest << " from=" << ingress << " noNextHop");
-
+      else if (protocol.toUri() == "/ndn") {
         lp::NackHeader nackHeader;
         nackHeader.setReason(lp::NackReason::NO_ROUTE);
         this->sendNack(pitEntry, ingress, nackHeader);
@@ -171,36 +116,36 @@ KoNDNStrategy::afterReceiveInterest(const FaceEndpoint& ingress, const Interest&
         this->rejectPendingInterest(pitEntry);
         return;
       }
-
-      auto egress = FaceEndpoint(it->getFace(), 0);
-      NFD_LOG_DEBUG(interest << " from=" << ingress << " newPitEntry-to=" << egress);
-      this->sendInterest(pitEntry, egress, interest);
-      return;
     }
 
-    // find an unused upstream with lowest cost except downstream
-    it = std::find_if(nexthops.begin(), nexthops.end(), [&](const auto& nexthop) {
-      return isNextHopEligible(ingress.face, interest, nexthop, pitEntry, true,
-                               time::steady_clock::now());
-    });
+    auto egress = FaceEndpoint(it->getFace(), 0);
+    NFD_LOG_DEBUG(interest << " from=" << ingress << " newPitEntry-to=" << egress);
+    this->sendInterest(pitEntry, egress, interest);
+    return;
+  }
 
-    if (it != nexthops.end()) {
-      auto egress = FaceEndpoint(it->getFace(), 0);
-      this->sendInterest(pitEntry, egress, interest);
-      NFD_LOG_DEBUG(interest << " from=" << ingress << " retransmit-unused-to=" << egress);
-      return;
-    }
+  // find an unused upstream with lowest cost except downstream
+  it = std::find_if(nexthops.begin(), nexthops.end(), [&](const auto& nexthop) {
+    return isNextHopEligible(ingress.face, interest, nexthop, pitEntry, true,
+                             time::steady_clock::now());
+  });
 
-    // find an eligible upstream that is used earliest
-    it = findEligibleNextHopWithEarliestOutRecord(ingress.face, interest, nexthops, pitEntry);
-    if (it == nexthops.end()) {
-      NFD_LOG_DEBUG(interest << " from=" << ingress << " retransmitNoNextHop");
-    }
-    else {
-      auto egress = FaceEndpoint(it->getFace(), 0);
-      this->sendInterest(pitEntry, egress, interest);
-      NFD_LOG_DEBUG(interest << " from=" << ingress << " retransmit-retry-to=" << egress);
-    }
+  if (it != nexthops.end()) {
+    auto egress = FaceEndpoint(it->getFace(), 0);
+    this->sendInterest(pitEntry, egress, interest);
+    NFD_LOG_DEBUG(interest << " from=" << ingress << " retransmit-unused-to=" << egress);
+    return;
+  }
+
+  // find an eligible upstream that is used earliest
+  it = findEligibleNextHopWithEarliestOutRecord(ingress.face, interest, nexthops, pitEntry);
+  if (it == nexthops.end()) {
+    NFD_LOG_DEBUG(interest << " from=" << ingress << " retransmitNoNextHop");
+  }
+  else {
+    auto egress = FaceEndpoint(it->getFace(), 0);
+    this->sendInterest(pitEntry, egress, interest);
+    NFD_LOG_DEBUG(interest << " from=" << ingress << " retransmit-retry-to=" << egress);
   }
 }
 
