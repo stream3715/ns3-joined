@@ -60,11 +60,39 @@
             // $ waf shell
             // $ env
             "environment": [
-                /*
+/*
                 {
                     "Name": "NS_LOG",
                     "Value": "*=level_debug|prefix_func|prefix_time|prefix_node"
                 },*/
+                {
+                    "name": "ID_PRD",
+                    "value": "37"
+                },
+                {
+                    "name": "ID_CON_MJ1",
+                    "value": "10"
+                },
+                {
+                    "name": "ID_CON_MJ2",
+                    "value": "21"
+                },
+                {
+                    "name": "ID_CON_MJ3",
+                    "value": "27"
+                },
+                {
+                    "name": "ID_CON_MN1",
+                    "value": "8"
+                },
+                {
+                    "name": "ID_CON_MN2",
+                    "value": "16"
+                },
+                {
+                    "name": "ID_CON_MN3",
+                    "value": "33"
+                },
                 {
                     "Name": "PYTHONPATH",
                     "Value": "/home/strea/ndnSIM/ns-3/build/bindings/python:/home/strea/ndnSIM/ns-3/src/visualizer:/home/strea/ndnSIM/pybindgen"

@@ -36,28 +36,17 @@ Entry::Entry(const Interest& interest)
 }
 
 bool
-Entry::canMatch(const Interest& interest, size_t nEqualNameComps) const
+Entry::canMatch(const Interest& interest, size_t nEqualNameComps, bool ignoreProtocol) const
 {
   BOOST_ASSERT(
     m_interest->getName().compare(0, nEqualNameComps, interest.getName(), 0, nEqualNameComps) == 0);
-  std::string content = m_interest->getName().toUri();
-  std::string econtent = interest.getName().toUri();
-  std::string suffix = "FEU";
-
-  if (content.size() >= suffix.size()
-      && 0 == content.compare(content.size() - suffix.size(), suffix.size(), suffix)) {
-    cout << "";
-  }
-
-  auto pit_protocol = m_interest->getProtocol().toUri();
-  auto packet_protocol = interest.getProtocol().toUri();
 
   return m_interest->getName().compare(nEqualNameComps, Name::npos, interest.getName(),
                                        nEqualNameComps)
            == 0
          && m_interest->getCanBePrefix() == interest.getCanBePrefix()
          && m_interest->getMustBeFresh() == interest.getMustBeFresh()
-         && m_interest->getProtocol() == interest.getProtocol();
+         && (ignoreProtocol || m_interest->getProtocol() == interest.getProtocol());
   /// \todo #3162 match ForwardingHint field
 }
 
@@ -112,9 +101,9 @@ Entry::getOutRecord(const Face& face)
 }
 
 OutRecordCollection::iterator
-Entry::insertOrUpdateOutRecord(Face& face, const Interest& interest)
+Entry::insertOrUpdateOutRecord(Face& face, const Interest& interest, bool firstNdn)
 {
-  BOOST_ASSERT(this->canMatch(interest));
+  BOOST_ASSERT(this->canMatch(interest, firstNdn));
 
   auto it =
     std::find_if(m_outRecords.begin(), m_outRecords.end(),

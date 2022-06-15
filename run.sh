@@ -5,6 +5,14 @@ if [ $# -ne 2 ]; then
     exit 1
 fi
 
+export ID_PRD=37
+export ID_CON_MJ1=10
+export ID_CON_MJ2=21
+export ID_CON_MJ3=27
+export ID_CON_MN1=8
+export ID_CON_MN2=16
+export ID_CON_MN3=33
+
 ./waf --run=ndn-kademlia >$2.log
 
 if [ $? -ne 0 ]; then
@@ -16,14 +24,14 @@ fi
 mkdir -p result/$1/$2
 rm -rf result/$1/$2/*
 
-mv app-delays-trace.tsv result/$1/$2/app-delays-trace-$2.tsv
-mv drop-trace.tsv result/$1/$2/drop-trace-$2.tsv
-mv rate-trace.tsv result/$1/$2/rate-trace-$2.tsv
-mv $2.log result/$1/$2/$2.log
+mv app-delays-trace.tsv result/$1/$2/k-app-delays-trace-$2.tsv
+mv drop-trace.tsv result/$1/$2/k-drop-trace-$2.tsv
+mv rate-trace.tsv result/$1/$2/k-rate-trace-$2.tsv
+mv $2.log result/$1/$2/k-$2.log
 
 cd result/$1/$2
-/home/strea/t2c.sh app-delays-trace-$2.tsv
-/home/strea/t2c.sh drop-trace-$2.tsv
-/home/strea/t2c.sh rate-trace-$2.tsv
+/home/strea/t2c.sh k-app-delays-trace-$2.tsv
+/home/strea/t2c.sh k-drop-trace-$2.tsv
+/home/strea/t2c.sh k-rate-trace-$2.tsv
 
 exit 0

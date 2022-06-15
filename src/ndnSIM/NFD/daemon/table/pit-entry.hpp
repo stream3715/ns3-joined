@@ -82,7 +82,7 @@ public:
    *  \param interest the Interest
    *  \param nEqualNameComps number of initial name components guaranteed to be equal
    */
-  bool canMatch(const Interest& interest, size_t nEqualNameComps = 0) const;
+  bool canMatch(const Interest& interest, size_t nEqualNameComps = 0, bool ignoreProtocol = false) const;
 
 public: // in-record
   /** \return collection of in-records
@@ -215,7 +215,7 @@ public: // out-record
   /** \brief insert or update an out-record
    *  \return an iterator to the new or updated out-record
    */
-  OutRecordCollection::iterator insertOrUpdateOutRecord(Face& face, const Interest& interest);
+  OutRecordCollection::iterator insertOrUpdateOutRecord(Face& face, const Interest& interest, bool firstNdn = false);
 
   /** \brief delete the out-record for \p face if it exists
    */

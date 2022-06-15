@@ -254,8 +254,9 @@ protected: // actions
    *  \param egress face through which to send out the Interest and destination endpoint
    *  \param interest the Interest packet
    */
-  VIRTUAL_WITH_TESTS void sendInterest(const shared_ptr<pit::Entry>& pitEntry,
-                                       const FaceEndpoint& egress, const Interest& interest);
+  VIRTUAL_WITH_TESTS void
+  sendInterest(const shared_ptr<pit::Entry>& pitEntry, const FaceEndpoint& egress,
+               const Interest& interest, const bool isFirstNdn = false);
 
   /** \brief send \p data to \p egress
    *  \param pitEntry PIT entry

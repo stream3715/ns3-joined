@@ -218,9 +218,13 @@ isNextHopEligible(const Face& inFace, const Interest& interest, const fib::NextH
 
   // do not forward back to the same face, unless it is ad hoc
   if ((outFace.getId() == inFace.getId() && outFace.getLinkType() != ndn::nfd::LINK_TYPE_AD_HOC
-       && interest.getAgentNodeID().toUri() != nodeId.toUri())
-      || (wouldViolateScope(inFace, interest, outFace)))
+       && interest.getAgentNodeID() != nodeId)
+      || (wouldViolateScope(inFace, interest, outFace))) {
+    auto tmp1 = interest.getAgentNodeID().toUri();
+    auto tmp2 = nodeId.toUri();
+    bool tmp3 = interest.getAgentNodeID() != nodeId;
     return false;
+  }
 
   if (wantUnused) {
     // nexthop must not have unexpired out-record

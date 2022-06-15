@@ -218,6 +218,11 @@ public:
   /** \brief outgoing Interest pipeline
    */
   VIRTUAL_WITH_TESTS void onOutgoingInterest(const shared_ptr<pit::Entry>& pitEntry,
+                                             const FaceEndpoint& egress, const Interest& interest, bool isFirstNdn = false);
+
+  /** \brief outgoing Interest pipeline
+   */
+  VIRTUAL_WITH_TESTS void onOutgoingInterestForAgentFirst(const shared_ptr<pit::Entry>& pitEntry,
                                              const FaceEndpoint& egress, const Interest& interest);
 
   /** \brief Interest finalize pipeline

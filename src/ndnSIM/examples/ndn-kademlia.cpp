@@ -112,32 +112,87 @@ main(int argc, char* argv[])
 
   // Install NDN stack on all nodes
   ndn::StackHelper ndnHelper;
-  ndnHelper.SetDefaultRoutes(true);
   ndnHelper.InstallAll();
+
+  // Choosing forwarding strategy
+  ndn::StrategyChoiceHelper::InstallAll("/", "/localhost/nfd/strategy/kondn/%FD%05");
 
   // Installing global routing interface on all nodes
   GlobalRoutingHelper ndnGlobalRoutingHelper;
   ndnGlobalRoutingHelper.InstallAll();
 
-  // Choosing forwarding strategy
-  ndn::StrategyChoiceHelper::InstallAll("/", "/localhost/nfd/strategy/kondn/%FD%05");
 
   // Installing applications
 
+  char* tmp = getenv("ID_PRD");
+
+  string env_prdId(tmp ? tmp : "");
+  if (env_prdId.empty()) {
+    cerr << "[ERROR] No such variable found!" << endl;
+    exit(EXIT_FAILURE);
+  }
+
+  tmp = getenv("ID_CON_MJ1");
+  string env_conIdMajor1(tmp ? tmp : "");
+  if (env_conIdMajor1.empty()) {
+    cerr << "[ERROR] No such variable found!" << endl;
+    exit(EXIT_FAILURE);
+  }
+
+  tmp = getenv("ID_CON_MJ2");
+  string env_conIdMajor2(tmp ? tmp : "");
+  if (env_conIdMajor2.empty()) {
+    cerr << "[ERROR] No such variable found!" << endl;
+    exit(EXIT_FAILURE);
+  }
+
+  tmp = getenv("ID_CON_MJ3");
+  string env_conIdMajor3(tmp ? tmp : "");
+  if (env_conIdMajor3.empty()) {
+    cerr << "[ERROR] No such variable found!" << endl;
+    exit(EXIT_FAILURE);
+  }
+
+  tmp = getenv("ID_CON_MN1");
+  string env_conIdMinor1(tmp ? tmp : "");
+  if (env_conIdMinor1.empty()) {
+    cerr << "[ERROR] No such variable found!" << endl;
+    exit(EXIT_FAILURE);
+  }
+
+  tmp = getenv("ID_CON_MN2");
+  string env_conIdMinor2(tmp ? tmp : "");
+  if (env_conIdMinor2.empty()) {
+    cerr << "[ERROR] No such variable found!" << endl;
+    exit(EXIT_FAILURE);
+  }
+
+  tmp = getenv("ID_CON_MN3");
+  string env_conIdMinor3(tmp ? tmp : "");
+  if (env_conIdMinor3.empty()) {
+    cerr << "[ERROR] No such variable found!" << endl;
+    exit(EXIT_FAILURE);
+  }
+
   // Producer
-  Ptr<Node> producerMain = Names::Find<Node>("rtr-35");
+  Ptr<Node> producerMain = Names::Find<Node>("rtr-" + env_prdId);
 
   ndn::AppHelper producerHelper("ns3::ndn::Producer");
   producerHelper.SetAttribute("PayloadSize", StringValue("1024"));
   producerHelper.SetPrefix(prefix);
   producerHelper.Install(producerMain); // last node
 
+  ndnGlobalRoutingHelper.AddOrigins(prefix, producerMain);
+
   // ndnGlobalRoutingHelper.AddOrigins(prefix, producerMain);
 
   NodeContainer majorConsumerNodes;
 
-  majorConsumerNodes.Add(Names::Find<Node>("rtr-1"));
+  majorConsumerNodes.Add(Names::Find<Node>("rtr-" + env_conIdMajor1));
+  majorConsumerNodes.Add(Names::Find<Node>("rtr-" + env_conIdMajor2));
+  majorConsumerNodes.Add(Names::Find<Node>("rtr-" + env_conIdMajor3));
   /*
+  majorConsumerNodes.Add(Names::Find<Node>("rtr-1"));
   majorConsumerNodes.Add(Names::Find<Node>("rtr-2"));
   majorConsumerNodes.Add(Names::Find<Node>("rtr-3"));
   majorConsumerNodes.Add(Names::Find<Node>("rtr-4"));
@@ -184,14 +239,18 @@ main(int argc, char* argv[])
 
   NodeContainer minorConsumerNodes;
 
+  minorConsumerNodes.Add(Names::Find<Node>("rtr-" + env_conIdMinor1));
+  minorConsumerNodes.Add(Names::Find<Node>("rtr-" + env_conIdMinor2));
+  minorConsumerNodes.Add(Names::Find<Node>("rtr-" + env_conIdMinor3));
+
   /*
     minorConsumerNodes.Add(Names::Find<Node>("rtr-1"));
     minorConsumerNodes.Add(Names::Find<Node>("rtr-8"));
     minorConsumerNodes.Add(Names::Find<Node>("rtr-9"));
   */
 
-  minorConsumerNodes.Add(Names::Find<Node>("rtr-10"));
   /*
+  minorConsumerNodes.Add(Names::Find<Node>("rtr-10"));
    minorConsumerNodes.Add(Names::Find<Node>("rtr-21"));
    minorConsumerNodes.Add(Names::Find<Node>("rtr-27"));
   */
@@ -203,7 +262,7 @@ main(int argc, char* argv[])
 */
   ndn::AppHelper minorConsumerHelper("ns3::ndn::ConsumerZipfMandelbrot");
   minorConsumerHelper.SetPrefix(prefix + "/minor");
-  minorConsumerHelper.SetAttribute("Frequency", StringValue("1"));
+  minorConsumerHelper.SetAttribute("Frequency", StringValue("5"));
   minorConsumerHelper.Install(minorConsumerNodes);
 
   // Add Kademlia Based Routes to Node
@@ -216,7 +275,7 @@ main(int argc, char* argv[])
   // Calculate and install FIBs
   GlobalRoutingHelper::CalculateRoutes();
 
-  Simulator::Stop(Seconds(1.0));
+  Simulator::Stop(Seconds(60.0));
 
   ndn::L3RateTracer::InstallAll("rate-trace.tsv", Seconds(0.5));
   L2RateTracer::InstallAll("drop-trace.tsv", Seconds(0.5));

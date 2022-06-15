@@ -162,8 +162,8 @@ Forwarder::onIncomingInterest(const FaceEndpoint& ingress, const Interest& inter
     if (id == "/976953572c8f4e8dbd433ff7be26db3c00000000") {
       std::cout << endl;
     }
-      m_cs.find(interest, bind(&Forwarder::onContentStoreHit, this, ingress, pitEntry, _1, _2),
-                bind(&Forwarder::onContentStoreMiss, this, ingress, pitEntry, _1));
+    m_cs.find(interest, bind(&Forwarder::onContentStoreHit, this, ingress, pitEntry, _1, _2),
+              bind(&Forwarder::onContentStoreMiss, this, ingress, pitEntry, _1));
   }
   else {
     this->onContentStoreMiss(ingress, pitEntry, interest);
@@ -186,6 +186,12 @@ Forwarder::onInterestLoop(const FaceEndpoint& ingress, const Interest& interest)
   // note: Don't enter outgoing Nack pipeline because it needs an in-record.
   lp::Nack nack(interest);
   nack.setReason(lp::NackReason::DUPLICATE);
+
+  const ndn::time::system_clock::TimePoint now = time::system_clock::now();
+  std::cout << time::toUnixTimestamp(now) << ",ON,INGRESS: " << ingress
+            << " CURR_NODE: " << m_nodeId.toUri() << " INAME: " << interest.getName().toUri()
+            << std::endl;
+
   ingress.face.sendNack(nack, ingress.endpoint);
 }
 
@@ -265,12 +271,12 @@ Forwarder::onContentStoreHit(const FaceEndpoint& ingress, const shared_ptr<pit::
 
 void
 Forwarder::onOutgoingInterest(const shared_ptr<pit::Entry>& pitEntry, const FaceEndpoint& egress,
-                              const Interest& interest)
+                              const Interest& interest, bool isFirstNdn)
 {
   NFD_LOG_DEBUG("onOutgoingInterest out=" << egress << " interest=" << pitEntry->getName());
 
   // insert out-record
-  pitEntry->insertOrUpdateOutRecord(egress.face, interest);
+  pitEntry->insertOrUpdateOutRecord(egress.face, interest, isFirstNdn);
 
   std::string prefix = "/localhost";
   std::string name = interest.getName().toUri();

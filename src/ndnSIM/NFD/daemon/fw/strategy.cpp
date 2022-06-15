@@ -202,15 +202,15 @@ Strategy::onDroppedInterest(const FaceEndpoint& egress, const Interest& interest
 
 void
 Strategy::sendInterest(const shared_ptr<pit::Entry>& pitEntry, const FaceEndpoint& egress,
-                       const Interest& interest)
+                       const Interest& interest, const bool isFirstNdn)
 {
   if (interest.getTag<lp::PitToken>() != nullptr) {
     Interest interest2 = interest; // make a copy to preserve tag on original packet
     interest2.removeTag<lp::PitToken>();
-    m_forwarder.onOutgoingInterest(pitEntry, egress, interest2);
+    m_forwarder.onOutgoingInterest(pitEntry, egress, interest2, isFirstNdn);
     return;
   }
-  m_forwarder.onOutgoingInterest(pitEntry, egress, interest);
+  m_forwarder.onOutgoingInterest(pitEntry, egress, interest, isFirstNdn);
 }
 
 void
