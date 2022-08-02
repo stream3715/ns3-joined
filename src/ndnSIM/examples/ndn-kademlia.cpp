@@ -58,6 +58,22 @@ namespace ns3 {
 using ns3::ndn::GlobalRoutingHelper;
 using namespace boost::uuids;
 
+vector<string>
+split(string str, string separator)
+{
+  if (separator == "")
+    return {str};
+  vector<string> result;
+  string tstr = str + separator;
+  size_t l = tstr.length(), sl = separator.length();
+  string::size_type pos = 0, prev = 0;
+
+  for (; pos < l && (pos = tstr.find(separator, pos)) != string::npos; prev = (pos += sl)) {
+    result.emplace_back(tstr, prev, pos - prev);
+  }
+  return result;
+}
+
 int
 main(int argc, char* argv[])
 {
@@ -112,6 +128,8 @@ main(int argc, char* argv[])
 
   // Install NDN stack on all nodes
   ndn::StackHelper ndnHelper;
+  // ndnHelper.setPolicy("nfd::cs::lru");
+  ndnHelper.setCsSize(2);
   ndnHelper.InstallAll();
 
   // Choosing forwarding strategy
@@ -120,7 +138,6 @@ main(int argc, char* argv[])
   // Installing global routing interface on all nodes
   GlobalRoutingHelper ndnGlobalRoutingHelper;
   ndnGlobalRoutingHelper.InstallAll();
-
 
   // Installing applications
 
@@ -132,47 +149,21 @@ main(int argc, char* argv[])
     exit(EXIT_FAILURE);
   }
 
-  tmp = getenv("ID_CON_MJ1");
-  string env_conIdMajor1(tmp ? tmp : "");
-  if (env_conIdMajor1.empty()) {
+  tmp = getenv("ID_CON_MJ");
+  string env_conIdMajor(tmp ? tmp : "");
+  if (env_conIdMajor.empty()) {
     cerr << "[ERROR] No such variable found!" << endl;
     exit(EXIT_FAILURE);
   }
+  vector<string> vecConMajorId = split(env_conIdMajor, ",");
 
-  tmp = getenv("ID_CON_MJ2");
-  string env_conIdMajor2(tmp ? tmp : "");
-  if (env_conIdMajor2.empty()) {
+  tmp = getenv("ID_CON_MN");
+  string env_conIdMinor(tmp ? tmp : "");
+  if (env_conIdMinor.empty()) {
     cerr << "[ERROR] No such variable found!" << endl;
     exit(EXIT_FAILURE);
   }
-
-  tmp = getenv("ID_CON_MJ3");
-  string env_conIdMajor3(tmp ? tmp : "");
-  if (env_conIdMajor3.empty()) {
-    cerr << "[ERROR] No such variable found!" << endl;
-    exit(EXIT_FAILURE);
-  }
-
-  tmp = getenv("ID_CON_MN1");
-  string env_conIdMinor1(tmp ? tmp : "");
-  if (env_conIdMinor1.empty()) {
-    cerr << "[ERROR] No such variable found!" << endl;
-    exit(EXIT_FAILURE);
-  }
-
-  tmp = getenv("ID_CON_MN2");
-  string env_conIdMinor2(tmp ? tmp : "");
-  if (env_conIdMinor2.empty()) {
-    cerr << "[ERROR] No such variable found!" << endl;
-    exit(EXIT_FAILURE);
-  }
-
-  tmp = getenv("ID_CON_MN3");
-  string env_conIdMinor3(tmp ? tmp : "");
-  if (env_conIdMinor3.empty()) {
-    cerr << "[ERROR] No such variable found!" << endl;
-    exit(EXIT_FAILURE);
-  }
+  vector<string> vecConMinorId = split(env_conIdMinor, ",");
 
   // Producer
   Ptr<Node> producerMain = Names::Find<Node>("rtr-" + env_prdId);
@@ -188,9 +179,9 @@ main(int argc, char* argv[])
 
   NodeContainer majorConsumerNodes;
 
-  majorConsumerNodes.Add(Names::Find<Node>("rtr-" + env_conIdMajor1));
-  majorConsumerNodes.Add(Names::Find<Node>("rtr-" + env_conIdMajor2));
-  majorConsumerNodes.Add(Names::Find<Node>("rtr-" + env_conIdMajor3));
+  for (string id : vecConMajorId) {
+    majorConsumerNodes.Add(Names::Find<Node>("rtr-" + id));
+  }
   /*
   majorConsumerNodes.Add(Names::Find<Node>("rtr-1"));
   majorConsumerNodes.Add(Names::Find<Node>("rtr-2"));
@@ -239,9 +230,9 @@ main(int argc, char* argv[])
 
   NodeContainer minorConsumerNodes;
 
-  minorConsumerNodes.Add(Names::Find<Node>("rtr-" + env_conIdMinor1));
-  minorConsumerNodes.Add(Names::Find<Node>("rtr-" + env_conIdMinor2));
-  minorConsumerNodes.Add(Names::Find<Node>("rtr-" + env_conIdMinor3));
+  for (string id : vecConMinorId) {
+    minorConsumerNodes.Add(Names::Find<Node>("rtr-" + id));
+  }
 
   /*
     minorConsumerNodes.Add(Names::Find<Node>("rtr-1"));
