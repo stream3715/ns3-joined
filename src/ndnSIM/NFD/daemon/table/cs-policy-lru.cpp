@@ -78,15 +78,23 @@ LruPolicy::evictEntries()
   while (this->getCs()->size() > this->getLimit()) {
     BOOST_ASSERT(!m_queue.empty());
 
+    auto it = m_queue.begin();
     // 先頭がAgent Nodeにおけるキャッシュでなくなるまでインクリメント
-    for (auto it = m_queue.begin(); it != m_queue.end(); it++) {
+    for (; it != m_queue.end(); it++) {
       if (m_entryInfoMap[*it]->queueType != QUEUE_AGENT) {
         EntryRef er = *it;
         m_entryInfoMap.erase(er);
         this->emitSignal(beforeEvict, er);
         m_queue.erase(it);
-        return;
+        break;
       }
+    }
+    if (it == m_queue.end()) {
+      it = m_queue.begin();
+      EntryRef er = *it;
+      m_entryInfoMap.erase(er);
+      this->emitSignal(beforeEvict, er);
+      m_queue.erase(it);
     }
   }
 }
