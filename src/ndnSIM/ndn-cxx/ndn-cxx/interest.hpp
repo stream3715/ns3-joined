@@ -348,12 +348,12 @@ public: // element access
     return m_destid;
   }
 
-  Interest&
-  setDestinationNodeID(Name destid)
+  void
+  setDestinationNodeID(Name destid) const
   {
     m_destid = destid;
     m_wire.reset();
-    return *this;
+    return;
   }
 
   const Name&

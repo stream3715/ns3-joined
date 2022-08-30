@@ -220,9 +220,6 @@ isNextHopEligible(const Face& inFace, const Interest& interest, const fib::NextH
   if ((outFace.getId() == inFace.getId() && outFace.getLinkType() != ndn::nfd::LINK_TYPE_AD_HOC
        && interest.getAgentNodeID() != nodeId)
       || (wouldViolateScope(inFace, interest, outFace))) {
-    auto tmp1 = interest.getAgentNodeID().toUri();
-    auto tmp2 = nodeId.toUri();
-    bool tmp3 = interest.getAgentNodeID() != nodeId;
     return false;
   }
 

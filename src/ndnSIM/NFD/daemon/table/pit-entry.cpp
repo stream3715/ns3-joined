@@ -103,7 +103,7 @@ Entry::getOutRecord(const Face& face)
 OutRecordCollection::iterator
 Entry::insertOrUpdateOutRecord(Face& face, const Interest& interest, bool firstNdn)
 {
-  BOOST_ASSERT(this->canMatch(interest, firstNdn));
+  BOOST_ASSERT(this->canMatch(interest, 0, firstNdn));
 
   auto it =
     std::find_if(m_outRecords.begin(), m_outRecords.end(),
