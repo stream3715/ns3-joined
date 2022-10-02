@@ -17,17 +17,17 @@ if [ $? -ne 0 ]; then
     exit -1
 fi
 
-mkdir -p result-2/$1/$2-$3
-rm -rf result-2/$1/$2-$3/*
+mkdir -p result-2ml/$1/$2-$3
+rm -rf result-2ml/$1/$2-$3/*
 
-mv app-delays-trace.tsv result-2/$1/$2-$3/k-app-delays-trace-$1-$2-$3.tsv
-mv drop-trace.tsv result-2/$1/$2-$3/k-drop-trace-$1-$2-$3.tsv
-mv rate-trace.tsv result-2/$1/$2-$3/k-rate-trace-$1-$2-$3.tsv
-mv $1-$2-$3.log result-2/$1/$2-$3/k-$1-$2-$3.log
+mv app-delays-trace.tsv result-2ml/$1/$2-$3/k-2ml-app-delays-trace-$1-$2-$3.tsv
+mv drop-trace.tsv result-2ml/$1/$2-$3/k-2ml-drop-trace-$1-$2-$3.tsv
+mv rate-trace.tsv result-2ml/$1/$2-$3/k-2ml-rate-trace-$1-$2-$3.tsv
+mv $1-$2-$3.log result-2ml/$1/$2-$3/k-2ml-$1-$2-$3.log
 
-cd result-2/$1/$2-$3
-/home/strea/t2c.sh k-app-delays-trace-$1-$2-$3.tsv
-/home/strea/t2c.sh k-drop-trace-$1-$2-$3.tsv
-/home/strea/t2c.sh k-rate-trace-$1-$2-$3.tsv
+cd result-2ml/$1/$2-$3
+/home/strea/t2c.sh k-2ml-app-delays-trace-$1-$2-$3.tsv
+/home/strea/t2c.sh k-2ml-drop-trace-$1-$2-$3.tsv
+/home/strea/t2c.sh k-2ml-rate-trace-$1-$2-$3.tsv
 
 exit 0

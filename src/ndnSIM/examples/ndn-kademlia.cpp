@@ -55,6 +55,7 @@ namespace ns3 {
  *     NS_LOG=ndn.Consumer:ndn.Producer ./waf --run=ndn-kademlia
  */
 
+using ns3::ndn::FibHelper;
 using ns3::ndn::GlobalRoutingHelper;
 using namespace boost::uuids;
 
@@ -119,7 +120,6 @@ main(int argc, char* argv[])
       std::string contentHash = hash.encode (boost::lexical_cast<std::string> (id)).to_string ();
       array.push_back (contentHash);
     }
-
   */
 
   AnnotatedTopologyReader topologyReader("", 25);
@@ -262,6 +262,15 @@ main(int argc, char* argv[])
     std::string value = e.value();
     ndnGlobalRoutingHelper.AddOrigins("/" + value, nodes.Get(index));
   }
+
+/*
+  FibHelper::AddRoute(Names::Find<Node>("rtr-3"), ndn::Name(prefix + "/major"), Names::Find<Node>("rtr-" + env_prdId), 0);
+  FibHelper::AddRoute(Names::Find<Node>("rtr-14"), ndn::Name(prefix + "/major"), Names::Find<Node>("rtr-" + env_prdId), 0);
+  FibHelper::AddRoute(Names::Find<Node>("rtr-37"), ndn::Name(prefix + "/major"), Names::Find<Node>("rtr-" + env_prdId), 0);
+  FibHelper::AddRoute(Names::Find<Node>("rtr-3"), ndn::Name(prefix + "/minor"), Names::Find<Node>("rtr-" + env_prdId), 0);
+  FibHelper::AddRoute(Names::Find<Node>("rtr-14"), ndn::Name(prefix + "/minor"), Names::Find<Node>("rtr-" + env_prdId), 0);
+  FibHelper::AddRoute(Names::Find<Node>("rtr-37"), ndn::Name(prefix + "/minor"), Names::Find<Node>("rtr-" + env_prdId), 0);
+*/
 
   // Calculate and install FIBs
   GlobalRoutingHelper::CalculateRoutes();

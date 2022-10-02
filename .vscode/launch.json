@@ -67,15 +67,15 @@
                 },*/
                 {
                     "name": "ID_PRD",
-                    "value": "35"
+                    "value": "1"
                 },
                 {
                     "name": "ID_CON_MJ",
-                    "value": "5,12,19,22,26"
+                    "value": "6,15,26,36"
                 },
                 {
                     "name": "ID_CON_MN",
-                    "value": "5,10,20,25,32"
+                    "value": "5,10,20,25"
                 },
                 {
                     "Name": "PYTHONPATH",
