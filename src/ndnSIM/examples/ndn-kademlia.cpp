@@ -129,7 +129,7 @@ main(int argc, char* argv[])
   // Install NDN stack on all nodes
   ndn::StackHelper ndnHelper;
   // ndnHelper.setPolicy("nfd::cs::lru");
-  ndnHelper.setCsSize(2);
+  ndnHelper.setCsSize(0);
   ndnHelper.InstallAll();
 
   // Choosing forwarding strategy
